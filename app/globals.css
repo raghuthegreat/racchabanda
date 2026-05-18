@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Noto Sans Telugu', system-ui, sans-serif;
+  }
+
+  /* Ensure Telugu script renders at a comfortable reading size */
+  .telugu-text {
+    font-family: 'Noto Sans Telugu', sans-serif;
+    font-size: 1.125rem; /* text-lg */
+    line-height: 1.75rem;
+  }
+
+  /* Larger Telugu for headings */
+  .telugu-heading {
+    font-family: 'Noto Sans Telugu', sans-serif;
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
+
+@layer utilities {
+  .masonry-2 {
+    columns: 2;
+    column-gap: 1.5rem;
+  }
+
+  .masonry-3 {
+    columns: 3;
+    column-gap: 1.5rem;
+  }
+
+  .masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
+}
