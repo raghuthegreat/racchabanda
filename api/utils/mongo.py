@@ -5,23 +5,22 @@ User documents in Yaasalu's MongoDB have the shape:
   { _id: ObjectId, username: str, display_name: str, avatar_url: str, ... }
 
 batch_fetch_users always fetches in a single query — never N+1.
+
+The `db` parameter should be Yaasalu's existing PyMongo database object,
+passed in via current_app.config["MONGO_DB"] so we reuse the same
+MongoClient connection pool rather than opening a second one.
 """
 
-from pymongo import MongoClient
 from bson import ObjectId
-from flask import current_app, g
+from flask import current_app
 
 
 def get_mongo_db():
-    """Return a cached MongoDB database handle stored on Flask's g object."""
-    if "mongo_db" not in g:
-        client = MongoClient(current_app.config["MONGO_URI"])
-        g.mongo_client = client
-        g.mongo_db = client[current_app.config["MONGO_DB_NAME"]]
-    return g.mongo_db
+    """Return the shared MongoDB database handle from app config."""
+    return current_app.config["MONGO_DB"]
 
 
-def batch_fetch_users(user_ids: list[str]) -> dict[str, dict]:
+def batch_fetch_users(user_ids: list) -> dict:
     """
     Fetch multiple users from MongoDB in a single query.
 
@@ -35,12 +34,10 @@ def batch_fetch_users(user_ids: list[str]) -> dict[str, dict]:
     if not user_ids:
         return {}
 
-    # Deduplicate
     unique_ids = list({uid for uid in user_ids if uid})
     if not unique_ids:
         return {}
 
-    # Convert to ObjectId where possible; keep strings that aren't valid ObjectIds
     object_ids = []
     for uid in unique_ids:
         try:
@@ -63,7 +60,6 @@ def batch_fetch_users(user_ids: list[str]) -> dict[str, dict]:
             "avatar_url": doc.get("avatar_url", ""),
         }
 
-    # Fill in placeholders for any ids that weren't found
     for uid in unique_ids:
         if uid not in result:
             result[uid] = {

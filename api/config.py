@@ -13,9 +13,8 @@ class Config:
     # PostgreSQL
     DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
-    # MongoDB
-    MONGO_URI = os.environ.get("MONGO_URI", "")
-    MONGO_DB_NAME = os.environ.get("MONGO_DB_NAME", "yaasalu")
+    # MongoDB — not configured here; MONGO_DB is injected by the host app
+    # (Yaasalu's existing MongoClient is passed in via app.config["MONGO_DB"])
 
     # Cloudinary
     CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
