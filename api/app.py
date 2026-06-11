@@ -19,17 +19,20 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 
-def register_blueprints(app, mongo_db):
+def register_blueprints(app, mongo_db=None):
     """
     Register all forum blueprints onto an existing Flask app.
 
     Args:
-        app:      The host Flask app (Yaasalu's app instance)
-        mongo_db: Yaasalu's existing PyMongo database object,
-                  e.g. MongoClient(MONGO_URI)["yaasalu"]
+        app:      The host Flask app
+        mongo_db: PyMongo database object. Optional — if omitted,
+                  app.config["MONGO_DB"] must already be set
+                  (e.g. via mdb.init_app(app)).
     """
-    # Inject the shared Mongo db so utils/mongo.py can find it
-    app.config["MONGO_DB"] = mongo_db
+    if mongo_db is not None:
+        app.config["MONGO_DB"] = mongo_db
+    if not app.config.get("MONGO_DB"):
+        raise RuntimeError("MONGO_DB not set — call mdb.init_app(app) before register_blueprints()")
 
     # Forum defaults — setdefault won't override anything Yaasalu already sets
     app.config.setdefault("PAGE_SIZE", 20)
