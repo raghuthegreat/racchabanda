@@ -4,13 +4,13 @@ Racchabanda Forum — Flask blueprints.
 Production use (integrated into Yaasalu):
     In Yaasalu's app.py:
 
-        from forum.app import register_blueprints
+        from racchabanda.app import register_blueprints
         register_blueprints(app, mongo_db=db)
 
     where `db` is Yaasalu's existing PyMongo database object.
 
 Standalone local dev:
-    python app.py
+    python wsgi.py
     Requires DATABASE_URL, MONGO_URI, MONGO_DB_NAME env vars.
 """
 
@@ -37,12 +37,12 @@ def register_blueprints(app, mongo_db=None):
     # Forum defaults — setdefault won't override anything Yaasalu already sets
     app.config.setdefault("PAGE_SIZE", 20)
 
-    from routes.categories import categories_bp
-    from routes.posts import posts_bp
-    from routes.replies import replies_bp
-    from routes.votes import votes_bp
-    from routes.definitions import definitions_bp
-    from routes.uploads import uploads_bp
+    from .routes.categories import categories_bp
+    from .routes.posts import posts_bp
+    from .routes.replies import replies_bp
+    from .routes.votes import votes_bp
+    from .routes.definitions import definitions_bp
+    from .routes.uploads import uploads_bp
 
     app.register_blueprint(categories_bp, url_prefix="/api/forum")
     app.register_blueprint(posts_bp, url_prefix="/api/forum")
@@ -55,8 +55,8 @@ def register_blueprints(app, mongo_db=None):
 def create_standalone_app():
     """Standalone app for local development — not used when integrated into Yaasalu."""
     from pymongo import MongoClient
-    from config import config
-    from db import init_app as init_db
+    from .config import config
+    from .db import init_app as init_db
 
     app = Flask(__name__)
     env = os.environ.get("FLASK_ENV", "default")
@@ -96,10 +96,3 @@ def create_standalone_app():
         return jsonify({"error": "Internal server error"}), 500
 
     return app
-
-
-app = create_standalone_app()
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)

@@ -1,7 +1,7 @@
 """Category model — plain psycopg2 queries."""
 
 import psycopg2.extras
-from db import get_db
+from ..db import get_db
 
 
 def row_to_dict(row) -> dict:

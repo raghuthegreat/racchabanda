@@ -1,11 +1,11 @@
 """Posts routes."""
 
 from flask import Blueprint, jsonify, request, abort, g
-from middleware.auth import login_required, load_user, admin_required
-from models.post import get_posts, get_post_by_id, create_post, update_post
-from models.reply import get_replies_for_post
-from models.definition import get_definitions_for_post
-from utils.mongo import batch_fetch_users
+from ..middleware.auth import login_required, load_user, admin_required
+from ..models.post import get_posts, get_post_by_id, create_post, update_post
+from ..models.reply import get_replies_for_post
+from ..models.definition import get_definitions_for_post
+from ..utils.mongo import batch_fetch_users
 from flask import current_app
 import datetime
 

@@ -2,15 +2,15 @@
 
 import datetime
 from flask import Blueprint, jsonify, request, abort, g
-from middleware.auth import login_required, admin_required, load_user
-from models.post import get_post_by_id
-from models.definition import (
+from ..middleware.auth import login_required, admin_required, load_user
+from ..models.post import get_post_by_id
+from ..models.definition import (
     get_definitions_for_post,
     get_definition_by_id,
     create_definition,
     set_top_answer,
 )
-from utils.mongo import batch_fetch_users
+from ..utils.mongo import batch_fetch_users
 
 definitions_bp = Blueprint("definitions", __name__)
 
