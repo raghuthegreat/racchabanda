@@ -4,7 +4,7 @@ Racchabanda Forum — Flask blueprints.
 Production use (integrated into Yaasalu):
     In Yaasalu's app.py:
 
-        from forum.app import register_blueprints
+        from racchabanda.app import register_blueprints
         register_blueprints(app, mongo_db=db)
 
     where `db` is Yaasalu's existing PyMongo database object.
