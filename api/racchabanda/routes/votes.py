@@ -2,8 +2,8 @@
 
 import datetime
 from flask import Blueprint, jsonify, request, abort, g
-from ..middleware.auth import login_required
-from ..models.vote import create_vote, delete_vote, get_vote
+from racchabanda.middleware.auth import login_required
+from racchabanda.models.vote import create_vote, delete_vote, get_vote
 
 votes_bp = Blueprint("votes", __name__)
 

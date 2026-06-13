@@ -2,7 +2,7 @@
 
 import psycopg2.extras
 import psycopg2
-from ..db import get_db
+from racchabanda.db import get_db
 
 
 def get_vote(mongo_user_id: str, post_id: int | None, reply_id: int | None) -> dict | None:

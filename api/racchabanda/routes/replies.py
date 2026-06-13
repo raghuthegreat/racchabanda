@@ -2,10 +2,10 @@
 
 import datetime
 from flask import Blueprint, jsonify, request, abort, g
-from ..middleware.auth import login_required, load_user
-from ..models.post import get_post_by_id
-from ..models.reply import create_reply, get_reply_by_id, delete_reply
-from ..utils.mongo import batch_fetch_users
+from racchabanda.middleware.auth import login_required, load_user
+from racchabanda.models.post import get_post_by_id
+from racchabanda.models.reply import create_reply, get_reply_by_id, delete_reply
+from racchabanda.utils.mongo import batch_fetch_users
 
 replies_bp = Blueprint("replies", __name__)
 

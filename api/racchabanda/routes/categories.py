@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, abort
-from ..models.category import get_all_categories, get_category_by_slug
+from racchabanda.models.category import get_all_categories, get_category_by_slug
 
 categories_bp = Blueprint("categories", __name__)
 
