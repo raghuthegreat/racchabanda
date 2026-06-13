@@ -1,7 +1,7 @@
 """Uploads route — image upload to Cloudinary."""
 
 from flask import Blueprint, jsonify, request, abort, current_app
-from middleware.auth import login_required
+from racchabanda.middleware.auth import login_required
 import cloudinary
 import cloudinary.uploader
 

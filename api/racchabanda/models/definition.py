@@ -1,7 +1,7 @@
 """Definition model — plain psycopg2 queries."""
 
 import psycopg2.extras
-from db import get_db
+from racchabanda.db import get_db
 
 
 def get_definitions_for_post(post_id: int) -> list[dict]:
