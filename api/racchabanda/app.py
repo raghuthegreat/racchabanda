@@ -29,20 +29,21 @@ def register_blueprints(app, mongo_db=None):
                   app.config["MONGO_DB"] must already be set
                   (e.g. via mdb.init_app(app)).
     """
+
     if mongo_db is not None:
-        app.config["MONGO_DB"] = mongo_db
-    if not app.config.get("MONGO_DB"):
+        app.config["MONGODB"] = mongo_db
+    if app.mongo_db is None:
         raise RuntimeError("MONGO_DB not set — call mdb.init_app(app) before register_blueprints()")
 
     # Forum defaults — setdefault won't override anything Yaasalu already sets
     app.config.setdefault("PAGE_SIZE", 20)
 
-    from routes.categories import categories_bp
-    from routes.posts import posts_bp
-    from routes.replies import replies_bp
-    from routes.votes import votes_bp
-    from routes.definitions import definitions_bp
-    from routes.uploads import uploads_bp
+    from .routes.categories import categories_bp
+    from .routes.posts import posts_bp
+    from .routes.replies import replies_bp
+    from .routes.votes import votes_bp
+    from .routes.definitions import definitions_bp
+    from .routes.uploads import uploads_bp
 
     app.register_blueprint(categories_bp, url_prefix="/api/forum")
     app.register_blueprint(posts_bp, url_prefix="/api/forum")
