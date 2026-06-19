@@ -17,7 +17,7 @@ from flask import current_app
 
 def get_mongo_db():
     """Return the shared MongoDB database handle from app config."""
-    return current_app.config["MONGO_DB"]
+    return current_app.config["MONGODB"]
 
 
 def batch_fetch_users(user_ids: list) -> dict:
