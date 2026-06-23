@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: '/racchabanda',
+  basePath: '/forum',
   async redirects() {
     return [
       {
