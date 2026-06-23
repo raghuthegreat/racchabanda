@@ -6,7 +6,7 @@ const nextConfig = {
       {
         source: '/',
         destination: '/racchabanda',
-        basePath: false,
+        basePath: '/forum',
         permanent: false,
       },
     ]
