@@ -44,6 +44,7 @@ def register_blueprints(app, mongo_db=None):
     from .routes.votes import votes_bp
     from .routes.definitions import definitions_bp
     from .routes.uploads import uploads_bp
+    from .routes.auth import auth_bp
 
     app.register_blueprint(categories_bp, url_prefix="/api/forum")
     app.register_blueprint(posts_bp, url_prefix="/api/forum")
@@ -51,6 +52,7 @@ def register_blueprints(app, mongo_db=None):
     app.register_blueprint(votes_bp, url_prefix="/api/forum")
     app.register_blueprint(definitions_bp, url_prefix="/api/forum")
     app.register_blueprint(uploads_bp, url_prefix="/api/forum")
+    app.register_blueprint(auth_bp, url_prefix="/api/forum")
 
 
 def create_standalone_app():
