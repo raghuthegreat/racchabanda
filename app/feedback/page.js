@@ -35,12 +35,12 @@ export default function FeedbackPage() {
     async function load() {
       try {
         setLoading(true);
-        const params = { category_slug: 'feedback', page };
+        const params = { category: 'feedback', page };
         if (postType !== 'all') params.post_type = postType;
         if (status !== 'all') params.status = status;
         const data = await getPosts(params);
-        setPosts(data.items);
-        setTotalPages(data.pages);
+        setPosts(data?.posts || data?.items || []);
+        setTotalPages(data?.pages || 1);
       } catch (e) {
         setError('పోస్టులు లోడ్ చేయడంలో సమస్య');
       } finally {
