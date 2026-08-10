@@ -1,16 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: '/racchabanda',
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/racchabanda',
-        basePath: false,
-        permanent: false,
-      },
-    ]
-  },
+  
   async rewrites() {
     return [
       {

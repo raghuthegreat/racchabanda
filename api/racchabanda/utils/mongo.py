@@ -2,7 +2,8 @@
 MongoDB utilities for Racchabanda.
 
 User documents in Yaasalu's MongoDB have the shape:
-  { _id: ObjectId, username: str, display_name: str, avatar_url: str, ... }
+  { _id: ObjectId, id: str (Google sub), name: str, email: str,
+    profile_pic: str, date_joined: str, last_seen: str }
 
 batch_fetch_users always fetches in a single query — never N+1.
 
@@ -48,7 +49,7 @@ def batch_fetch_users(user_ids: list) -> dict:
     db = get_mongo_db()
     cursor = db.users.find(
         {"_id": {"$in": object_ids}},
-        {"_id": 1, "username": 1, "display_name": 1, "avatar_url": 1},
+        {"_id": 1, "name": 1, "profile_pic": 1},
     )
 
     result = {}
@@ -56,8 +57,8 @@ def batch_fetch_users(user_ids: list) -> dict:
         uid_str = str(doc["_id"])
         result[uid_str] = {
             "id": uid_str,
-            "name": doc.get("display_name") or doc.get("username") or "Anonymous",
-            "avatar_url": doc.get("avatar_url", ""),
+            "name": doc.get("name") or "Anonymous",
+            "avatar_url": doc.get("profile_pic", ""),
         }
 
     for uid in unique_ids:
