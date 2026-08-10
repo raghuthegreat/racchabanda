@@ -3,11 +3,19 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import RacchabandaDropdown from './RacchabandaDropdown'
+import { useAuth } from '@/lib/auth'
+import { logout } from '@/lib/api'
 
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL || 'https://yaasalu.com/login'
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { user, isLoggedIn, loading } = useAuth()
+
+  async function handleLogout() {
+    await logout()
+    window.location.reload()
+  }
 
   return (
     <header className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-sm">
@@ -77,12 +85,31 @@ export default function Navbar() {
 
           {/* Right: Log in + Add word */}
           <div className="flex items-center gap-2 shrink-0">
-            <a
-              href={LOGIN_URL}
-              className="hidden sm:inline-flex px-3 py-1.5 text-sm text-slate-600 border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors"
-            >
-              Log in
-            </a>
+            {!loading && isLoggedIn ? (
+              <div className="hidden sm:flex items-center gap-2">
+                {user?.avatar_url && (
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    className="w-6 h-6 rounded-full"
+                  />
+                )}
+                <span className="text-sm text-slate-600">{user?.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 text-sm text-slate-600 border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors"
+                >
+                  Log out
+                </button>
+              </div>
+            ) : (
+              <a
+                href={LOGIN_URL}
+                className="hidden sm:inline-flex px-3 py-1.5 text-sm text-slate-600 border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors"
+              >
+                Log in
+              </a>
+            )}
 
             <Link
               href="/request-a-word/new"
@@ -152,12 +179,24 @@ export default function Navbar() {
               సంప్రదించండి · Contact
             </Link>
             <div className="px-4 pt-2">
-              <a
-                href={LOGIN_URL}
-                className="block w-full text-center px-4 py-2 text-sm border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors"
-              >
-                Log in
-              </a>
+              {!loading && isLoggedIn ? (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm text-slate-700">{user?.name}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 text-sm border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors"
+                  >
+                    Log out
+                  </button>
+                </div>
+              ) : (
+                <a
+                  href={LOGIN_URL}
+                  className="block w-full text-center px-4 py-2 text-sm border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors"
+                >
+                  Log in
+                </a>
+              )}
             </div>
           </div>
         )}
