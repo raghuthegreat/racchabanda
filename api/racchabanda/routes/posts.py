@@ -53,32 +53,44 @@ def list_posts():
     load_user()
 
     category_id = request.args.get("category_id", type=int)
+    category_slug = request.args.get("category")
     region = request.args.get("region")
     post_type = request.args.get("post_type")
     status = request.args.get("status")
+    sort = request.args.get("sort", "new")
+    limit = request.args.get("limit", type=int)
     page = request.args.get("page", 1, type=int)
     if page < 1:
         page = 1
+
+    # Resolve slug -> id when caller passes ?category=<slug>
+    if category_slug and not category_id:
+        from racchabanda.models.category import get_category_by_slug
+        cat = get_category_by_slug(category_slug)
+        if cat:
+            category_id = cat["id"]
 
     posts, total = get_posts(
         category_id=category_id,
         region=region,
         post_type=post_type,
         status=status,
+        sort=sort,
+        limit=limit,
         page=page,
     )
 
     user_ids = [p["mongo_user_id"] for p in posts]
     users = batch_fetch_users(user_ids)
 
-    page_size = current_app.config["PAGE_SIZE"]
     import math
+    page_size = limit or current_app.config["PAGE_SIZE"]
     pages = math.ceil(total / page_size) if total else 1
 
     serialized = [_serialize_post(p, users) for p in posts]
 
     return jsonify({
-        "items": serialized,
+        "posts": serialized,
         "total": total,
         "page": page,
         "pages": pages,

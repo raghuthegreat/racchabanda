@@ -30,22 +30,24 @@ def _build_post_filter(category_id=None, region=None, post_type=None, status=Non
     return where, params
 
 
-def get_posts(category_id=None, region=None, post_type=None, status=None, page=1) -> tuple[list[dict], int]:
+def get_posts(category_id=None, region=None, post_type=None, status=None,
+              sort="new", limit=None, page=1) -> tuple[list[dict], int]:
     """
     Return (posts, total_count) with vote_count and reply_count included.
+    sort: "new" (default) | "votes"
     """
-    page_size = current_app.config["PAGE_SIZE"]
+    page_size = limit or current_app.config["PAGE_SIZE"]
     offset = (page - 1) * page_size
+
+    order = "COUNT(DISTINCT v.id) DESC, p.created_at DESC" if sort == "votes" else "p.is_pinned DESC, p.created_at DESC"
 
     where, params = _build_post_filter(category_id, region, post_type, status)
 
     conn = get_db()
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        # Total count
         cur.execute(f"SELECT COUNT(*) FROM posts p {where}", params)
         total = cur.fetchone()["count"]
 
-        # Paginated rows with aggregated counts
         cur.execute(
             f"""
             SELECT
@@ -60,7 +62,7 @@ def get_posts(category_id=None, region=None, post_type=None, status=None, page=1
             LEFT JOIN replies r ON r.post_id = p.id
             {where}
             GROUP BY p.id
-            ORDER BY p.is_pinned DESC, p.created_at DESC
+            ORDER BY {order}
             LIMIT %s OFFSET %s
             """,
             params + [page_size, offset],

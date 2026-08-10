@@ -5,6 +5,8 @@ import DefinitionList from '@/components/definitions/DefinitionList'
 import DefinitionForm from '@/components/definitions/DefinitionForm'
 import { getPost, getReplies, getDefinitions } from '@/lib/api'
 
+export const dynamic = 'force-dynamic'
+
 async function getData(id) {
   try {
     const [post, replies, definitions] = await Promise.all([
