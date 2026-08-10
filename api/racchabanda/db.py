@@ -17,6 +17,9 @@ def get_db():
         # Heroku provides postgres:// but psycopg2 requires postgresql://
         if database_url.startswith("postgres://"):
             database_url = database_url.replace("postgres://", "postgresql://", 1)
+        if "sslmode" not in database_url:
+            sep = "&" if "?" in database_url else "?"
+            database_url += f"{sep}sslmode=require"
         g.db = psycopg2.connect(database_url)
     return g.db
 
