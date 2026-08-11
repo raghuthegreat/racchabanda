@@ -2,6 +2,8 @@ import Link from 'next/link'
 import PostCard from '@/components/posts/PostCard'
 import { getPosts } from '@/lib/api'
 
+export const dynamic = 'force-dynamic'
+
 async function getWordRequests(status) {
   try {
     const params = { category: 'request-a-word', sort: 'votes', limit: 50 }
