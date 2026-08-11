@@ -26,13 +26,12 @@ def register_blueprints(app, mongo_db=None):
     Args:
         app:      The host Flask app
         mongo_db: PyMongo database object. Optional — if omitted,
-                  app.config["MONGO_DB"] must already be set
-                  (e.g. via mdb.init_app(app)).
+                  app.config["MONGO_DB"] must already be set.
     """
     if mongo_db is not None:
         app.config["MONGO_DB"] = mongo_db
-    if not app.config.get("MONGO_DB"):
-        raise RuntimeError("MONGO_DB not set — call mdb.init_app(app) before register_blueprints()")
+    if app.config.get("MONGO_DB") is None:
+        raise RuntimeError("MONGO_DB not set — pass mongo_db= to register_blueprints()")
 
     app.config.setdefault("PAGE_SIZE", 20)
 
