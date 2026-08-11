@@ -40,13 +40,13 @@ export default function NewWordRequestPage() {
     try {
       const title = form.word_transliteration.trim()
       const post = await createPost({
-        category: 'request-a-word',
+        category_id: 1,
+        post_type: 'request',
         title,
-        word_transliteration: form.word_transliteration.trim(),
+        word: form.word_transliteration.trim(),
         word_telugu: form.word_telugu.trim() || undefined,
         region: form.region || undefined,
         body: form.context.trim() || undefined,
-        example_sentence: form.example_sentence.trim() || undefined,
       })
       router.push(`/request-a-word/${post.id}`)
     } catch (err) {

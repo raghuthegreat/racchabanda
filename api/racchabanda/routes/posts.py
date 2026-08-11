@@ -63,7 +63,6 @@ def list_posts():
     if page < 1:
         page = 1
 
-    # Resolve slug -> id when caller passes ?category=<slug>
     if category_slug and not category_id:
         from racchabanda.models.category import get_category_by_slug
         cat = get_category_by_slug(category_slug)
@@ -104,6 +103,7 @@ def create_post_route():
     data = request.get_json(silent=True) or {}
 
     category_id = data.get("category_id")
+    category_slug = (data.get("category_slug") or "").strip()
     title = (data.get("title") or "").strip()
     body = (data.get("body") or "").strip() or None
     image_url = (data.get("image_url") or "").strip() or None
@@ -111,6 +111,12 @@ def create_post_route():
     region = (data.get("region") or "").strip() or None
     word = (data.get("word") or "").strip() or None
     word_telugu = (data.get("word_telugu") or "").strip() or None
+
+    if not category_id and category_slug:
+        from racchabanda.models.category import get_category_by_slug
+        cat = get_category_by_slug(category_slug)
+        if cat:
+            category_id = cat["id"]
 
     if not category_id:
         abort(400, description="category_id is required")
@@ -147,7 +153,6 @@ def get_post(post_id: int):
     replies = get_replies_for_post(post_id)
     definitions = get_definitions_for_post(post_id)
 
-    # Batch fetch all user IDs in one query
     user_ids = (
         [post["mongo_user_id"]]
         + [r["mongo_user_id"] for r in replies]
@@ -173,7 +178,6 @@ def patch_post(post_id: int):
     if not post:
         abort(404)
 
-    # Only admin can update admin-only fields; owners can update title/body/image_url
     data = request.get_json(silent=True) or {}
 
     admin_fields = {"status", "yaasalu_word_url", "is_pinned"}
