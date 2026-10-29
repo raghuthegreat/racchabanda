@@ -29,7 +29,7 @@ def load_user():
     if not google_sub:
         return
 
-    user_doc = current_app.config["MONGODB"].users.find_one({"id": google_sub})
+    user_doc = current_app.config["MONGO_DB"].users.find_one({"id": google_sub})
     if not user_doc:
         return
 
