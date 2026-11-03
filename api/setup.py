@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="racchabanda-forum",
-    version="0.1.2",
+    version="0.2.6",
     packages=find_packages(),
     install_requires=[
         "Flask>=3.0.3",
