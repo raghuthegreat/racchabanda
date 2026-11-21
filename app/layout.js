@@ -1,30 +1,55 @@
-import { Noto_Sans_Telugu } from 'next/font/google'
-import './globals.css'
-import Navbar from '@/components/nav/Navbar'
-import Footer from '@/components/shared/Footer'
+import Script from 'next/script'
+import { headers } from 'next/headers'
 
-const notoSansTelugu = Noto_Sans_Telugu({
-  subsets: ['telugu'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-noto-telugu',
-})
+import './forum.css'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import { getMe } from '@/lib/site'
+
+// The forum wears the dictionary's brand: its header and footer are the site's own markup,
+// styled by the site's files (Bootstrap 5.1, Font Awesome, /Static/css/site.css and brand.css,
+// served by the yaasalu site on the same domain), plus app/forum.css for the forum's parts.
+// Unlike the blog, these /Static links carry no content hash (this app is built on Vercel,
+// without the site's files), so after a brand change browsers may keep the old css for a while.
 
 export const metadata = {
-  title: 'రచ్చబండ · Racchabanda',
-  description: 'Telugu community forum — రచ్చబండ. Request words, discuss Telugu typos, explore regions, and share feedback.',
-  keywords: 'Telugu, language, forum, community, Racchabanda, రచ్చబండ',
+  metadataBase: new URL('https://www.yaasalu.com'),
+  title: 'రచ్చబండ · యాసలు',
+  description: 'ఊరంతా కూర్చుని మాట్లాడుకునే చోటు: తెలుగు పదాలు, ఊరి మాటల గురించి చర్చలు. Racchabanda, the Yaasalu forum.',
+  openGraph: { siteName: 'యాసలు | Yaasalu', locale: 'te_IN', type: 'website' },
 }
 
-export default function RootLayout({ children }) {
+// Every page knows who is looking (the header, reply boxes), so pages are rendered per request
+export const dynamic = 'force-dynamic'
+
+const GA_ID = 'G-C401QLB5BC'
+
+export default async function RootLayout({ children }) {
+  const me = await getMe(headers().get('cookie') || '')
   return (
-    <html lang="te" className={notoSansTelugu.variable}>
-      <body className="bg-stone-50 text-slate-800 min-h-screen flex flex-col font-[var(--font-noto-telugu)]">
-        <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
+    <html lang="te">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@500;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossOrigin="anonymous" />
+        <link href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" rel="stylesheet" crossOrigin="anonymous" />
+        <link href="/Static/css/site.css" rel="stylesheet" />
+        <link href="/Static/css/brand.css" rel="stylesheet" />
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');`}
+        </Script>
+      </head>
+      <body>
+        <Header me={me} />
+        <main className="site-main rb">{children}</main>
         <Footer />
+        <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
       </body>
     </html>
   )

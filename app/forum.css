@@ -1,0 +1,64 @@
+/* రచ్చబండ's own parts, on top of the site's Bootstrap 5.1 + /Static/css/site.css + brand.css.
+   Only the brand's variables (brand.css :root): leaf green for actions, mud and thatch for the
+   forum's warm touches. No colours of its own. */
+
+.rb { font-family: var(--font-body); color: var(--brand-ink); }
+.rb-wrap { max-width: 1040px; margin: 0 auto; padding: 1.5rem 1rem 2.5rem; }
+
+/* The header's current item (the site marks pages the same way with its hover colour) */
+.site-bar .nav-link.rb-nav-current { color: var(--brand-leaf) !important; font-weight: 700; }
+@media (min-width: 992px) {
+  .site-bar .nav-link.rb-nav-current { box-shadow: inset 0 -2px 0 var(--brand-leaf); }
+}
+
+/* Buttons: the site's one action colour */
+.rb-btn { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 44px; padding: 0 1.2rem;
+          border-radius: 999px; font-weight: 600; font-size: 0.95rem; text-decoration: none; cursor: pointer; }
+.rb-btn-primary { background: var(--brand-leaf); color: #fff !important; border: 1px solid var(--brand-leaf); }
+.rb-btn-primary:hover { background: var(--brand-leaf-dark); border-color: var(--brand-leaf-dark); }
+.rb-btn-outline { background: var(--brand-surface); color: var(--brand-leaf) !important; border: 1px solid var(--brand-border); }
+.rb-btn-outline:hover { background: var(--brand-leaf-soft); }
+
+/* The title band: warm mud, the mark, the name */
+.rb-band { display: flex; align-items: center; gap: 1.5rem; padding: 1.6rem 1.8rem; border-radius: 20px;
+           background: var(--brand-mud-soft); }
+.rb-band-text { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+.rb-band-title { margin: 0; font-family: var(--font-display); font-size: 2.6rem; font-weight: 700; line-height: 1.05; color: var(--brand-ink); }
+.rb-band-tag { margin: 0; font-size: 1.15rem; font-weight: 600; color: var(--brand-mud); }
+.rb-band-sub { margin: 0; color: var(--brand-muted); }
+.rb-band-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.6rem; }
+@media (max-width: 575.98px) {
+  .rb-band { flex-direction: column; align-items: flex-start; gap: 0.6rem; padding: 1.2rem; }
+  .rb-band svg { width: 64px; height: 64px; }
+  .rb-band-title { font-size: 2rem; }
+  .rb-band-actions { width: 100%; }
+  .rb-band-actions .rb-btn { flex: 1; justify-content: center; }
+}
+
+/* Avatars: a photo, or a first letter on a soft brand tone */
+.rb-avatar { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 50%;
+             object-fit: cover; font-weight: 700; line-height: 1; }
+.rb-avatar-mud { background: var(--brand-mud-soft); color: var(--brand-mud); }
+.rb-avatar-leaf { background: var(--brand-leaf-soft); color: var(--brand-leaf-dark); }
+.rb-avatar-thatch { background: var(--brand-thatch-soft); color: #6b4a10; }
+.rb-avatar-sunk { background: var(--brand-sunk); color: var(--brand-ink); }
+
+/* Chips: a word (mud, links to the dictionary) and a region (leaf) */
+.rb-chip-word { display: inline-block; padding: 0.1rem 0.55rem; border-radius: 6px; background: var(--brand-mud-soft);
+                color: var(--brand-mud) !important; font-weight: 700; font-size: 0.85rem; text-decoration: none; }
+.rb-chip-region { display: inline-block; padding: 0.1rem 0.65rem; border-radius: 999px; background: var(--brand-leaf-soft);
+                  color: var(--brand-leaf-dark) !important; font-weight: 600; font-size: 0.85rem; text-decoration: none; }
+.rb-new { display: inline-block; padding: 0 0.55rem; border-radius: 999px; border: 1px solid var(--brand-thatch);
+          background: var(--brand-thatch-soft); color: #6b4a10; font-weight: 700; font-size: 0.75rem; }
+
+/* Telugu word stickers (lib/stickers.js): a slightly tilted stamp in the sticker's tone */
+.rb-sticker { display: inline-flex; align-items: baseline; gap: 0.3rem; padding: 0.15rem 0.6rem; border-radius: 9px;
+              font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; line-height: 1.5; border: 1px solid; }
+.rb-sticker-n { font-family: var(--font-body); font-weight: 500; font-size: 0.8rem; }
+.rb-sticker-thatch { background: var(--brand-thatch-soft); color: #6b4a10; border-color: #ecd49c; }
+.rb-sticker-leaf { background: var(--brand-leaf-soft); color: var(--brand-leaf-dark); border-color: #c9d3bb; }
+.rb-sticker-mud { background: var(--brand-mud-soft); color: var(--brand-mud); border-color: #e4c9b6; }
+.rb-sticker-cream { background: var(--brand-surface); color: var(--brand-mud); border-color: var(--brand-line); }
+.rb-sticker-mine { background: var(--brand-thatch); color: var(--brand-ink); border-color: #a8741f; }
+
+.rb-soon { margin: 1.5rem 0 0; color: var(--brand-muted); }
