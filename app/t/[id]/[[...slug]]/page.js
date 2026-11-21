@@ -2,12 +2,15 @@ import { cache } from 'react'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 import Avatar from '@/components/shared/Avatar'
-import StickerChip from '@/components/StickerChip'
+import StickerBar from '@/components/StickerBar'
+import ReplyBox from '@/components/ReplyBox'
+import DeleteButton from '@/components/DeleteButton'
 import PostText from '@/components/PostText'
 import { getThread, parseId } from '@/lib/forum'
 import { readDb } from '@/lib/db'
 import { currentMe } from '@/lib/me'
 import { threadPath, timeAgo } from '@/lib/text'
+import { DELETE_WINDOW_MS } from '@/lib/write'
 
 // A thread: /racchabanda/t/<id>/<slug>. Any other slug (or none: the word page links
 // /t/<id>) redirects to the thread's own address, so each thread has one URL.
@@ -51,6 +54,10 @@ export default async function ThreadPage({ params }) {
   if (have !== want) permanentRedirect(want)
 
   const now = new Date()
+  const loggedIn = !!me.user
+  // The delete button shows when lib/write.js would allow it (the route checks again)
+  const mayDelete = (row, isThread) => !!me.user && (me.user.admin || (row.author_id === me.user.id
+    && now - new Date(row.created_at) <= DELETE_WINDOW_MS && (!isThread || thread.reply_count === 0)))
   return (
     <div className="rb-wrap rb-thread">
       <Link className="rb-back" href="/">← రచ్చబండ</Link>
@@ -67,7 +74,10 @@ export default async function ThreadPage({ params }) {
           <span><strong className="rb-who">{thread.author_name || 'ఎవరో'}</strong><span className="rb-when">{timeAgo(thread.created_at, now)}</span></span>
         </header>
         {thread.body && <PostText text={thread.body} />}
-        {stickers.length > 0 && <div className="rb-stickers">{stickers.map((s) => <StickerChip key={s.code} {...s} />)}</div>}
+        <div className="rb-post-foot">
+          <StickerBar threadId={thread.id} initial={stickers} loggedIn={loggedIn} />
+          {mayDelete(thread, true) && <DeleteButton what="thread" id={thread.id} />}
+        </div>
       </article>
 
       {posts.length > 0 && (
@@ -79,13 +89,18 @@ export default async function ThreadPage({ params }) {
                 <span><strong className="rb-who">{p.author_name || 'ఎవరో'}</strong><span className="rb-when">{timeAgo(p.created_at, now)}</span></span>
               </header>
               <PostText text={p.body} />
-              {p.stickers.length > 0 && <div className="rb-stickers">{p.stickers.map((s) => <StickerChip key={s.code} {...s} />)}</div>}
+              <div className="rb-post-foot">
+                <StickerBar threadId={thread.id} postId={p.id} initial={p.stickers} loggedIn={loggedIn} />
+                {mayDelete(p, false) && <DeleteButton what="post" id={p.id} />}
+              </div>
             </article>
           ))}
         </section>
       )}
 
-      {!me.user && (
+      {me.user ? (
+        <ReplyBox threadId={thread.id} />
+      ) : (
         <p className="rb-login">జవాబు రాయడానికి, స్టిక్కర్ ఇవ్వడానికి <a href="/login">Google తో లాగిన్ అవ్వండి</a>.</p>
       )}
     </div>

@@ -110,3 +110,34 @@
   .rb-thread-title { font-size: 1.55rem; }
   .rb-replies { padding-left: 0.7rem; }
 }
+
+/* Writing: sticker buttons and picker, reply box, new-thread form, delete */
+.rb-post-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.rb-sticker-btn { padding: 0; border: 0; background: none; cursor: pointer; line-height: 1; }
+.rb-sticker-btn:disabled { opacity: 0.6; cursor: default; }
+.rb-sticker-btn:focus-visible, .rb-sticker-add:focus-visible { outline: 2px solid var(--brand-leaf); outline-offset: 2px; border-radius: 9px; }
+.rb-sticker-add { min-width: 36px; min-height: 32px; border: 1px dashed var(--brand-border); border-radius: 9px; background: var(--brand-surface);
+                  color: var(--brand-muted); font-size: 1.1rem; line-height: 1; cursor: pointer; }
+.rb-picker { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 0.45rem; padding: 0.7rem; border-radius: 12px; background: var(--brand-sunk); }
+.rb-delete { border: 0; background: none; color: var(--brand-muted); font-size: 0.85rem; cursor: pointer; padding: 0.3rem 0.4rem; }
+.rb-delete:hover { color: var(--brand-kumkuma); }
+.rb-error { color: var(--brand-kumkuma); font-size: 0.9rem; }
+
+.rb-input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--brand-border); border-radius: 10px; background: var(--brand-surface);
+            font-family: var(--font-body); font-size: 1rem; color: var(--brand-ink); }
+.rb-input:focus { outline: 2px solid var(--brand-leaf); outline-offset: 1px; border-color: var(--brand-leaf); }
+textarea.rb-input { resize: vertical; line-height: 1.6; }
+.rb-reply { margin-top: 1.4rem; padding: 1rem; border: 1px solid var(--brand-border); border-radius: 14px; display: flex; flex-direction: column; gap: 0.6rem; }
+.rb-reply-label { font-weight: 700; }
+.rb-reply-foot, .rb-form-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+.rb-reply-foot .rb-btn, .rb-form-foot .rb-btn { margin-left: auto; }
+.rb-reply-note { font-size: 0.85rem; color: var(--brand-muted); }
+.rb-form { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.6rem; }
+.rb-form label { font-weight: 700; margin-top: 0.6rem; }
+.rb-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.rb-form-row > div { display: flex; flex-direction: column; gap: 0.45rem; }
+.rb-form-foot { margin-top: 1rem; }
+@media (max-width: 575.98px) {
+  .rb-form-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .rb-reply-foot .rb-btn, .rb-form-foot .rb-btn { width: 100%; justify-content: center; }
+}

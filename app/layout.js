@@ -49,6 +49,9 @@ export default async function RootLayout({ children }) {
         <main className="site-main rb">{children}</main>
         <Footer />
         <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
+        {/* The site's Telugu typing for the forum's text boxes (class yc-text), like its comment box */}
+        <Script src="https://cdn.jsdelivr.net/npm/@indic-transliteration/sanscript@1.3.3/sanscript.min.js" strategy="afterInteractive" />
+        <Script src="/Static/scripts/telugu-typing.js" strategy="afterInteractive" />
       </body>
     </html>
   )
