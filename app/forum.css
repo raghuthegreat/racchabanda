@@ -3,6 +3,12 @@
    forum's warm touches. No colours of its own. */
 
 .rb { font-family: var(--font-body); color: var(--brand-ink); }
+
+/* The header is pulled up 20px (style="margin-top: -20px", as on the site); the site's own
+   page gives .container a 40px top margin that offsets it (templates/index.html), the blog
+   copies it (app/styles/globals.css), and so must the forum, or on phones the logo, + and ☰
+   end up under the top edge. */
+.site-header .container { margin-top: 40px; }
 .rb-wrap { max-width: 1040px; margin: 0 auto; padding: 1.5rem 1rem 2.5rem; }
 
 /* The header's current item (the site marks pages the same way with its hover colour) */
