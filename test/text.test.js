@@ -20,8 +20,10 @@ test('slugify stops at about 60 characters, on a word boundary', () => {
   assert.ok(s.split('-').every((w) => w === 'పదం'))
 })
 
-test('threadPath: /t/<id>/<slug>, or /t/<id> when the title has no letters', () => {
-  assert.equal(threadPath({ id: 12, title: 'బొక్క అంటే?' }), '/t/12/బొక్క-అంటే')
+test('threadPath: /t/<id>/<slug>, percent-encoded (it goes into Location headers and emails)', () => {
+  assert.equal(threadPath({ id: 12, title: 'బొక్క అంటే?' }), '/t/12/' + encodeURIComponent('బొక్క-అంటే'))
+  assert.equal(decodeURIComponent(threadPath({ id: 12, title: 'బొక్క అంటే?' })), '/t/12/బొక్క-అంటే')
+  assert.match(threadPath({ id: 12, title: 'బొక్క అంటే?' }), /^[\x21-\x7e]+$/)
   assert.equal(threadPath({ id: 7, title: '???' }), '/t/7')
 })
 
@@ -55,4 +57,13 @@ test('timeAgo in Telugu, like the site\'s 🔔 page', () => {
   assert.equal(ago(30 * 3600), 'నిన్న')
   assert.equal(ago(5 * 86400), '5 రోజుల క్రితం')
   assert.equal(ago(40 * 86400), '2026-10-12')
+})
+
+test('linkParts: web addresses become links, everything else stays text (never HTML)', async () => {
+  const { linkParts } = await import('../lib/text.js')
+  assert.deepEqual(linkParts('చూడండి https://www.yaasalu.com/yaasa/బొక్క, బాగుంది'), [
+    { text: 'చూడండి ' }, { href: 'https://www.yaasalu.com/yaasa/బొక్క', text: 'https://www.yaasalu.com/yaasa/బొక్క' }, { text: ', బాగుంది' }])
+  assert.deepEqual(linkParts('a <b>bold</b> javascript:alert(1)'), [{ text: 'a <b>bold</b> javascript:alert(1)' }])
+  assert.deepEqual(linkParts('(http://x.test/a).'), [{ text: '(' }, { href: 'http://x.test/a', text: 'http://x.test/a' }, { text: ').' }])
+  assert.deepEqual(linkParts(''), [])
 })

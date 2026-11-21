@@ -4,17 +4,8 @@
 // comes from the server (lib/site.js getMe), so there is no "లాగిన్" flash. Links to the rest of
 // the site are plain <a> (outside this app's /racchabanda basePath).
 
-const REGIONS = [
-  ['ఉత్తరాంధ్ర', ['శ్రీకాకుళం', 'విజయనగరం', 'బొబ్బిలి']],
-  ['కోస్తా', ['గోదావరి', 'కృష్ణ', 'నెల్లూరు']],
-  ['తెలంగాణ', ['మెదక్', 'సంగారెడ్డి', 'జగిత్యాల', 'నాగర్ కర్నూలు']],
-  ['రాయలసీమ', ['చిత్తూరు', 'నంద్యాల', 'కడప', 'అనంతపురం']],
-  ['తమిళనాడు', [['హోసూరు', 'హోసూరు Hosuru'], ['సేలం', 'సేలం Selam']]],
-  ['ఒడిశా', [['బరంపురం', 'బరంపురం Barampuram']]],
-  ['కర్ణాటక', [['కోలార్', 'కోలార్ Kolar'], ['పావుగడ', 'పావుగడ Paavugada']]],
-  [['మలేషియా', 'మలేషియా Malaysia'], []],
-  [['శ్రీలంక', 'శ్రీలంక Sri Lanka'], []],
-]
+import { REGIONS } from '@/lib/regions'
+
 const link = (r) => (Array.isArray(r) ? r : [r, r])
 
 export default function Header({ me }) {

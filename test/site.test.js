@@ -54,7 +54,7 @@ test('notifyReply posts to /api/forum/notify with the token, the thread path und
   assert.equal(opts.headers['X-Forum-Token'], 'tok')
   assert.deepEqual(JSON.parse(opts.body), {
     to: ['u1', 'u2'], kind: 'forum_reply', actor: 'u3', body: 'కడపలో కూడా',
-    thread: { id: 12, title: 'బొక్క అంటే?', url: '/racchabanda/t/12/బొక్క-అంటే' },
+    thread: { id: 12, title: 'బొక్క అంటే?', url: '/racchabanda/t/12/' + encodeURIComponent('బొక్క-అంటే') },
   })
 })
 

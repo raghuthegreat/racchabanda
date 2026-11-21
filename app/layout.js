@@ -1,10 +1,9 @@
 import Script from 'next/script'
-import { headers } from 'next/headers'
 
 import './forum.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import { getMe } from '@/lib/site'
+import { currentMe } from '@/lib/me'
 
 // The forum wears the dictionary's brand: its header and footer are the site's own markup,
 // styled by the site's files (Bootstrap 5.1, Font Awesome, /Static/css/site.css and brand.css,
@@ -25,7 +24,7 @@ export const dynamic = 'force-dynamic'
 const GA_ID = 'G-C401QLB5BC'
 
 export default async function RootLayout({ children }) {
-  const me = await getMe(headers().get('cookie') || '')
+  const me = await currentMe()
   return (
     <html lang="te">
       <head>

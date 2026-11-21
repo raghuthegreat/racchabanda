@@ -61,4 +61,52 @@
 .rb-sticker-cream { background: var(--brand-surface); color: var(--brand-mud); border-color: var(--brand-line); }
 .rb-sticker-mine { background: var(--brand-thatch); color: var(--brand-ink); border-color: #a8741f; }
 
-.rb-soon { margin: 1.5rem 0 0; color: var(--brand-muted); }
+
+/* The stream's filter chips */
+.rb-chips { display: flex; gap: 0.5rem; margin: 1.4rem 0 0.4rem; overflow-x: auto; padding-bottom: 0.2rem; }
+.rb-chip { flex-shrink: 0; display: inline-flex; align-items: center; min-height: 40px; padding: 0 1rem; border-radius: 999px;
+           border: 1px solid var(--brand-line); background: var(--brand-surface); color: var(--brand-ink) !important;
+           font-weight: 600; font-size: 0.9rem; text-decoration: none; }
+.rb-chip:hover { border-color: var(--brand-border); }
+.rb-chip-on { background: var(--brand-leaf); border-color: var(--brand-leaf); color: #fff !important; }
+.rb-filter { margin: 1.4rem 0 0.4rem; color: var(--brand-muted); }
+
+/* Thread rows */
+.rb-list { border-top: 1px solid var(--brand-line); margin-top: 0.6rem; }
+.rb-row { display: flex; gap: 0.9rem; align-items: flex-start; padding: 1rem 0.2rem; border-bottom: 1px solid var(--brand-line); }
+.rb-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.rb-row-title { margin: 0; font-size: 1.08rem; font-weight: 700; line-height: 1.45; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.rb-row-title a { color: var(--brand-ink); text-decoration: none; }
+.rb-row-title a:hover { color: var(--brand-leaf); }
+.rb-pin { color: var(--brand-mud); font-size: 0.85rem; }
+.rb-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; font-size: 0.85rem; color: var(--brand-muted); }
+.rb-row-side { display: flex; flex-direction: column; align-items: flex-end; gap: 0.45rem; flex-shrink: 0; }
+.rb-row-stickers { display: flex; gap: 0.35rem; }
+.rb-row-replies { color: var(--brand-muted); font-size: 0.9rem; white-space: nowrap; }
+@media (max-width: 575.98px) {
+  .rb-row { gap: 0.7rem; }
+  .rb-row-side { display: none; }
+}
+.rb-empty { margin: 1.5rem 0; color: var(--brand-muted); }
+.rb-more { display: flex; justify-content: center; margin-top: 1.4rem; }
+
+/* A thread */
+.rb-thread { max-width: 820px; }
+.rb-back { display: inline-block; margin-bottom: 0.8rem; font-weight: 600; text-decoration: none; }
+.rb-thread-title { margin: 0 0 0.6rem; font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1.25; }
+.rb-post { display: flex; flex-direction: column; gap: 0.6rem; padding: 0.9rem 0; }
+.rb-post-first { margin-top: 1rem; padding: 1.1rem 1.25rem; border: 1px solid var(--brand-line); border-radius: 16px; }
+.rb-post-head { display: flex; align-items: center; gap: 0.7rem; }
+.rb-post-head > span { display: flex; flex-direction: column; line-height: 1.3; }
+.rb-who { color: var(--brand-mud); }
+.rb-when { font-size: 0.82rem; color: var(--brand-muted); }
+.rb-text { font-size: 1.05rem; line-height: 1.75; white-space: pre-line; overflow-wrap: anywhere; }
+.rb-stickers { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.rb-replies { margin-top: 0.6rem; padding-left: 1.2rem; border-left: 3px solid var(--brand-mud-soft); }
+.rb-replies .rb-post { border-bottom: 1px solid var(--brand-line); }
+.rb-replies .rb-post:last-child { border-bottom: 0; }
+.rb-login { margin-top: 1.4rem; padding: 0.9rem 1rem; border-radius: 12px; background: var(--brand-sunk); }
+@media (max-width: 575.98px) {
+  .rb-thread-title { font-size: 1.55rem; }
+  .rb-replies { padding-left: 0.7rem; }
+}
