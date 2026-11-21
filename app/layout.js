@@ -32,7 +32,10 @@ export default async function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@500;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossOrigin="anonymous" />
-        <link href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" rel="stylesheet" crossOrigin="anonymous" />
+        {/* No crossOrigin, exactly as the site loads it: Font Awesome only sends its CORS header to
+            requests that ask with an Origin, and Safari reuses the site's plain cached copy for a
+            crossOrigin request, finds no CORS header and drops the stylesheet (blank icons on phones) */}
+        <link href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" rel="stylesheet" />
         <link href="/Static/css/site.css" rel="stylesheet" />
         <link href="/Static/css/brand.css" rel="stylesheet" />
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
