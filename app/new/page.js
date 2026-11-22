@@ -1,0 +1,27 @@
+import Link from 'next/link'
+import NewThreadForm from '@/components/NewThreadForm'
+import { currentMe } from '@/lib/me'
+import { ALL_REGION_IDS } from '@/lib/regions'
+
+export const metadata = { title: 'కొత్త చర్చ · రచ్చబండ', robots: { index: false } }
+
+// /racchabanda/new?word=<word>&region=<region>: the word page's "ఈ పదం గురించి మాట్లాడండి"
+// fills in the word. Logged out: a login link (the site's login returns here afterwards).
+export default async function NewThread({ searchParams }) {
+  const sp = await searchParams
+  const one = (v) => (Array.isArray(v) ? v[0] : v) || ''
+  const word = one(sp.word).trim().slice(0, 100)
+  const region = ALL_REGION_IDS.includes(one(sp.region)) ? one(sp.region) : ''
+  const me = await currentMe()
+  return (
+    <div className="rb-wrap rb-thread">
+      <Link className="rb-back" href="/">← రచ్చబండ</Link>
+      <h1 className="rb-thread-title">కొత్త చర్చ</h1>
+      {me.user ? (
+        <NewThreadForm word={word} region={region} />
+      ) : (
+        <p className="rb-login">చర్చ మొదలుపెట్టడానికి <a href="/login">Google తో లాగిన్ అవ్వండి</a>. లాగిన్ అయ్యాక ఇక్కడికే తిరిగి వస్తారు.</p>
+      )}
+    </div>
+  )
+}

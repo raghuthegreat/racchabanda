@@ -1,0 +1,50 @@
+# Keep the forum's free Supabase projects awake. A free project is paused after about a week
+# without database activity, and a paused project makes రచ్చబండ (and the threads box on word
+# pages) fail until someone restores it in the dashboard. Once a day this runs one real query
+# per project with its public anon key (read-only, like any visitor). A project whose secrets
+# aren't set yet (prod, before launch) is skipped; a set one that fails turns the run red, and
+# GitHub emails the repo owner.
+#
+# Repository secrets (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_STAGING_URL, SUPABASE_STAGING_ANON_KEY   (yaasalu-staging)
+#   SUPABASE_PROD_URL,    SUPABASE_PROD_ANON_KEY      (yaasalu-prod, once it exists)
+name: Supabase ping
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # daily, 03:17 UTC (an off-the-hour minute: GitHub is less busy)
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [staging, prod]
+    steps:
+      - name: Query ${{ matrix.project }}
+        # All four go in and the script picks: GitHub's `a && b || c` would fall through to the
+        # prod secrets whenever the staging ones are empty
+        env:
+          PROJECT: ${{ matrix.project }}
+          STAGING_URL: ${{ secrets.SUPABASE_STAGING_URL }}
+          STAGING_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
+          PROD_URL: ${{ secrets.SUPABASE_PROD_URL }}
+          PROD_KEY: ${{ secrets.SUPABASE_PROD_ANON_KEY }}
+        run: |
+          if [ "$PROJECT" = "staging" ]; then URL=$STAGING_URL; KEY=$STAGING_KEY; else URL=$PROD_URL; KEY=$PROD_KEY; fi
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "No secrets for ${{ matrix.project }} yet; skipped."
+            exit 0
+          fi
+          code=$(curl --silent --show-error --output /tmp/body --write-out '%{http_code}' --max-time 30 \
+            --retry 2 --retry-all-errors \
+            "${URL%/}/rest/v1/threads?select=id&limit=1" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY")
+          echo "HTTP $code"
+          if [ "$code" != "200" ]; then
+            head -c 300 /tmp/body; echo
+            exit 1
+          fi
