@@ -94,7 +94,7 @@ export default function Header({ me }) {
                   </li>
                 ) : (
                   <li className="nav-item" style={{ listStyleType: 'none' }}>
-                    <a href="/login" id="signinbutton" className="nav-link text-white">
+                    <a href="/login" id="signinbutton" className="nav-link text-white" data-login="account">
                       <i className="fab fa-google" aria-hidden="true"></i> లాగిన్
                     </a>
                   </li>

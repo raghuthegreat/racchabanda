@@ -147,3 +147,25 @@ textarea.rb-input { resize: vertical; line-height: 1.6; }
   .rb-form-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .rb-reply-foot .rb-btn, .rb-form-foot .rb-btn { width: 100%; justify-content: center; }
 }
+
+/* The site's login pop-up (components/LoginPopup.js): copied from yaasa templates/_login.html's
+   <style>; keep in step */
+  .yl-modal .modal-dialog { max-width: 400px; margin-left: auto; margin-right: auto; width: auto; }
+@media (max-width: 575.98px) { .yl-modal .modal-dialog { margin: 1rem; } }
+.yl { position: relative; border: 0; border-radius: 18px; padding: 1.75rem 1.4rem 1.3rem; text-align: center;
+      font-family: var(--font-body); color: var(--brand-ink); }
+.yl-close { position: absolute; top: 0.9rem; right: 0.9rem; }
+.yl-mark { display: block; margin: 0 auto 0.5rem; }
+.yl-title { font-family: var(--font-display); font-size: 1.45rem; font-weight: 700; margin: 0 0 0.4rem; }
+.yl-why { font-size: 1rem; line-height: 1.6; margin: 0 0 1.1rem; }
+.yl-google { display: flex; align-items: center; justify-content: center; gap: 0.65rem; min-height: 50px; padding: 0 1rem;
+             border: 1px solid var(--brand-border); border-radius: 10px; background: #fff; color: var(--brand-ink) !important;
+             font-size: 1.05rem; font-weight: 600; text-decoration: none; }
+.yl-google:hover { background: var(--brand-sunk); }
+.yl-note { margin: 0.9rem 0 0; font-size: 0.85rem; line-height: 1.6; color: var(--brand-muted); }
+
+/* Editing your own post (components/EditablePost.js) */
+.rb-edit { align-self: flex-start; border: 0; background: none; color: var(--brand-muted); font-size: 0.85rem; padding: 0.2rem 0; cursor: pointer; }
+.rb-edit:hover { color: var(--brand-leaf); }
+.rb-edit-form { display: flex; flex-direction: column; gap: 0.5rem; }
+.rb-edited { color: var(--brand-muted); }
