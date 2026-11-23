@@ -1,5 +1,5 @@
 // DELETE /racchabanda/api/posts/<id>: your reply within 5 minutes, or an admin's delete
-// PATCH  /racchabanda/api/posts/<id> {body}: edit your reply within 24 hours
+// PATCH  /racchabanda/api/posts/<id> {body}: edit your reply within 2 days
 import { handleWrite } from '@/lib/route'
 import { deleteReply, editReply } from '@/lib/write'
 

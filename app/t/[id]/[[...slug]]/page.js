@@ -59,7 +59,7 @@ export default async function ThreadPage({ params }) {
   // The delete button shows when lib/write.js would allow it (the route checks again)
   const mayDelete = (row, isThread) => !!me.user && (me.user.admin || (row.author_id === me.user.id
     && now - new Date(row.created_at) <= DELETE_WINDOW_MS && (!isThread || thread.reply_count === 0)))
-  // Editing: only the writer, within 24 hours (admins delete, they don't edit others' words)
+  // Editing: only the writer, within 2 days (admins delete, they don't edit others' words)
   const mayEdit = (row) => !!me.user && row.author_id === me.user.id && now - new Date(row.created_at) <= EDIT_WINDOW_MS
   const edited = (row) => row.edited_at && (
     <span className="rb-edited" title={`సవరించారు: ${timeAgo(row.edited_at, now)}`}> · సవరించారు</span>)

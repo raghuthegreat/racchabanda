@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { send } from '@/lib/client'
 import { TITLE_MAX, BODY_MAX } from '@/lib/text'
 
-// A post's text with "సవరించండి" for its writer (within 24 hours: the page decides, the route
+// A post's text with "సవరించండి" for its writer (within 2 days: the page decides, the route
 // checks again). Editing opens the text in place (and the title, for a thread's first post)
 // with సేవ్ / రద్దు. A thread's new title can change its address, so a saved thread goes to the
 // address the route returns; a saved reply just refreshes.

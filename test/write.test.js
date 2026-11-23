@@ -216,14 +216,14 @@ test('deleteThread: yours within 5 minutes and before anyone replied; admins any
 })
 
 // ---------- editing ----------
-test('edit window is 24 hours', () => {
-  assert.equal(EDIT_WINDOW_MS, 24 * 3600 * 1000)
+test('edit window is 2 days', () => {
+  assert.equal(EDIT_WINDOW_MS, 48 * 3600 * 1000)
 })
 
-test('editReply: your own reply within 24 hours; text cleaned; edited_at set; nothing else changes', async () => {
+test('editReply: your own reply within 2 days; text cleaned; edited_at set; nothing else changes', async () => {
   const s = memStore()
   const t = await s.insertThread({ title: 't', author_id: 'u2', last_activity_at: ago(3600) })
-  const p = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'old', created_at: ago(23 * 3600) })
+  const p = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'old', created_at: ago(47 * 3600) })
   await s.addReaction({ thread_id: t.id, post_id: p.id, user_id: 'u2', sticker: 'keka' })
   const r = await editReply(s, ME, { postId: p.id, body: '  కొత్త మాట  ' }, NOW)
   assert.equal(r.status, 200)
@@ -234,11 +234,11 @@ test('editReply: your own reply within 24 hours; text cleaned; edited_at set; no
   assert.equal(s.threads[0].last_activity_at, ago(3600), 'the thread does not move to the top')
 })
 
-test('editReply: logged out 401; missing 404; someone else\'s 403; after 24 hours 403; admins cannot edit others 403', async () => {
+test('editReply: logged out 401; missing 404; someone else\'s 403; after 2 days 403; admins cannot edit others 403', async () => {
   const s = memStore()
   const t = await s.insertThread({ title: 't', author_id: 'u2' })
   const mine = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'x', created_at: ago(60) })
-  const old = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'x', created_at: ago(25 * 3600) })
+  const old = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'x', created_at: ago(49 * 3600) })
   const theirs = await s.insertPost({ thread_id: t.id, author_id: 'u2', body: 'x', created_at: ago(60) })
   assert.equal((await editReply(s, null, { postId: mine.id, body: 'y' }, NOW)).status, 401)
   assert.equal((await editReply(s, ME, { postId: 999, body: 'y' }, NOW)).status, 404)
@@ -257,9 +257,9 @@ test('editReply: empty or too long -> 400', async () => {
   assert.equal(s.posts[0].body, 'x')
 })
 
-test('editThread: your own thread\'s title and text within 24 hours; returns the new address', async () => {
+test('editThread: your own thread\'s title and text within 2 days; returns the new address', async () => {
   const s = memStore()
-  const t = await s.insertThread({ title: 'పాత శీర్షిక', body: 'పాత', author_id: 'u1', created_at: ago(3600), last_activity_at: ago(60), word: 'బేగా', region: 'కోస్తా' })
+  const t = await s.insertThread({ title: 'పాత శీర్షిక', body: 'పాత', author_id: 'u1', created_at: ago(40 * 3600), last_activity_at: ago(60), word: 'బేగా', region: 'కోస్తా' })
   const r = await editThread(s, ME, { threadId: t.id, title: '  కొత్త   శీర్షిక ', body: ' కొత్త ' }, NOW)
   assert.equal(r.status, 200)
   const u = s.threads[0]
@@ -268,10 +268,10 @@ test('editThread: your own thread\'s title and text within 24 hours; returns the
   assert.equal(r.body.path, `/t/${t.id}/` + encodeURIComponent('కొత్త-శీర్షిక'))
 })
 
-test('editThread: even after replies (only the writer, within 24 hours); not others, not after 24 hours, not admins', async () => {
+test('editThread: even after replies (only the writer, within 2 days); not others, not after 2 days, not admins', async () => {
   const s = memStore()
   const replied = await s.insertThread({ title: 't', author_id: 'u1', created_at: ago(60), reply_count: 3 })
-  const old = await s.insertThread({ title: 't', author_id: 'u1', created_at: ago(25 * 3600) })
+  const old = await s.insertThread({ title: 't', author_id: 'u1', created_at: ago(49 * 3600) })
   const theirs = await s.insertThread({ title: 't', author_id: 'u2', created_at: ago(60) })
   assert.equal((await editThread(s, ME, { threadId: replied.id, title: 'new' }, NOW)).status, 200)
   assert.equal((await editThread(s, ME, { threadId: old.id, title: 'new' }, NOW)).status, 403)

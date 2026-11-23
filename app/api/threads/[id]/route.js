@@ -1,5 +1,5 @@
 // DELETE /racchabanda/api/threads/<id>: your new thread before replies, or an admin's delete
-// PATCH  /racchabanda/api/threads/<id> {title, body}: edit your thread within 24 hours
+// PATCH  /racchabanda/api/threads/<id> {title, body}: edit your thread within 2 days
 import { handleWrite } from '@/lib/route'
 import { deleteThread, editThread } from '@/lib/write'
 
