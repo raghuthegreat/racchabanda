@@ -27,7 +27,7 @@ export default function NewThreadForm({ word = '', region = '' }) {
     <form className="rb-form" onSubmit={submit}>
       <label htmlFor="rb-title">శీర్షిక</label>
       <input id="rb-title" name="title" className="yc-text rb-input" maxLength={TITLE_MAX} required
-             placeholder='ఉదా: "బొక్క" అంటే మీ ఊర్లో ఏమిటి?' />
+             placeholder='ఉదా: "బేగా" అంటే మీ ఊర్లో ఏమిటి?' />
 
       <label htmlFor="rb-body">మీ మాట</label>
       <textarea id="rb-body" name="body" className="yc-text rb-input" rows={6} maxLength={BODY_MAX}
@@ -36,7 +36,7 @@ export default function NewThreadForm({ word = '', region = '' }) {
       <div className="rb-form-row">
         <div>
           <label htmlFor="rb-word">పదం (ఉంటే)</label>
-          <input id="rb-word" name="word" className="yc-text rb-input" maxLength={100} defaultValue={word} placeholder="ఉదా: బొక్క" />
+          <input id="rb-word" name="word" className="yc-text rb-input" maxLength={100} defaultValue={word} placeholder="ఉదా: బేగా" />
         </div>
         <div>
           <label htmlFor="rb-region">ప్రాంతం (ఉంటే)</label>
