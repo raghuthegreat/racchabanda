@@ -1,7 +1,7 @@
 // node --test: the rules for writing (lib/write.js) against an in-memory store
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { createThread, createReply, toggleSticker, deleteReply, deleteThread, originAllowed, allowedOrigins, LIMITS } from '../lib/write.js'
+import { createThread, createReply, toggleSticker, deleteReply, deleteThread, editReply, editThread, originAllowed, allowedOrigins, LIMITS, EDIT_WINDOW_MS } from '../lib/write.js'
 
 const ME = { id: 'u1', name: 'సీత', pic: 'https://x/s.jpg', admin: false }
 const OTHER = { id: 'u2', name: 'రఘు', pic: '', admin: false }
@@ -29,6 +29,8 @@ function memStore() {
     },
     async removeReaction(m) { s.reactions = s.reactions.filter((r) => !(r.thread_id === m.thread_id && r.post_id === m.post_id && r.user_id === m.user_id && r.sticker === m.sticker)) },
     async reactionsOf(threadId, postId) { return s.reactions.filter((r) => r.thread_id === threadId && r.post_id === postId) },
+    async updateThread(id, fields) { const t = s.threads.find((x) => x.id === id); Object.assign(t, fields); return t },
+    async updatePost(id, fields) { const p = s.posts.find((x) => x.id === id); Object.assign(p, fields); return p },
   }
   return s
 }
@@ -211,4 +213,71 @@ test('deleteThread: yours within 5 minutes and before anyone replied; admins any
   assert.equal((await deleteThread(s, ME, { threadId: mine.id }, NOW)).status, 200)
   assert.equal((await deleteThread(s, ADMIN, { threadId: theirs.id }, NOW)).status, 200)
   assert.deepEqual(s.threads.map((t) => t.id).sort(), [replied.id, old.id].sort())
+})
+
+// ---------- editing ----------
+test('edit window is 2 days', () => {
+  assert.equal(EDIT_WINDOW_MS, 48 * 3600 * 1000)
+})
+
+test('editReply: your own reply within 2 days; text cleaned; edited_at set; nothing else changes', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2', last_activity_at: ago(3600) })
+  const p = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'old', created_at: ago(47 * 3600) })
+  await s.addReaction({ thread_id: t.id, post_id: p.id, user_id: 'u2', sticker: 'keka' })
+  const r = await editReply(s, ME, { postId: p.id, body: '  కొత్త మాట  ' }, NOW)
+  assert.equal(r.status, 200)
+  assert.equal(s.posts[0].body, 'కొత్త మాట')
+  assert.equal(s.posts[0].edited_at, NOW.toISOString())
+  assert.deepEqual(r.body.post, { id: p.id, body: 'కొత్త మాట', edited_at: NOW.toISOString() })
+  assert.equal(s.reactions.length, 1, 'stickers stay')
+  assert.equal(s.threads[0].last_activity_at, ago(3600), 'the thread does not move to the top')
+})
+
+test('editReply: logged out 401; missing 404; someone else\'s 403; after 2 days 403; admins cannot edit others 403', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  const mine = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'x', created_at: ago(60) })
+  const old = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'x', created_at: ago(49 * 3600) })
+  const theirs = await s.insertPost({ thread_id: t.id, author_id: 'u2', body: 'x', created_at: ago(60) })
+  assert.equal((await editReply(s, null, { postId: mine.id, body: 'y' }, NOW)).status, 401)
+  assert.equal((await editReply(s, ME, { postId: 999, body: 'y' }, NOW)).status, 404)
+  assert.equal((await editReply(s, ME, { postId: theirs.id, body: 'y' }, NOW)).status, 403)
+  assert.equal((await editReply(s, ME, { postId: old.id, body: 'y' }, NOW)).status, 403)
+  assert.equal((await editReply(s, ADMIN, { postId: theirs.id, body: 'y' }, NOW)).status, 403)
+  assert.deepEqual(s.posts.map((p) => p.body), ['x', 'x', 'x'])
+})
+
+test('editReply: empty or too long -> 400', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  const p = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'x', created_at: ago(60) })
+  assert.equal((await editReply(s, ME, { postId: p.id, body: '   ' }, NOW)).status, 400)
+  assert.equal((await editReply(s, ME, { postId: p.id, body: 'a'.repeat(5001) }, NOW)).status, 400)
+  assert.equal(s.posts[0].body, 'x')
+})
+
+test('editThread: your own thread\'s title and text within 2 days; returns the new address', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 'పాత శీర్షిక', body: 'పాత', author_id: 'u1', created_at: ago(40 * 3600), last_activity_at: ago(60), word: 'బేగా', region: 'కోస్తా' })
+  const r = await editThread(s, ME, { threadId: t.id, title: '  కొత్త   శీర్షిక ', body: ' కొత్త ' }, NOW)
+  assert.equal(r.status, 200)
+  const u = s.threads[0]
+  assert.deepEqual([u.title, u.body, u.edited_at, u.last_activity_at, u.word, u.region],
+                   ['కొత్త శీర్షిక', 'కొత్త', NOW.toISOString(), ago(60), 'బేగా', 'కోస్తా'])
+  assert.equal(r.body.path, `/t/${t.id}/` + encodeURIComponent('కొత్త-శీర్షిక'))
+})
+
+test('editThread: even after replies (only the writer, within 2 days); not others, not after 2 days, not admins', async () => {
+  const s = memStore()
+  const replied = await s.insertThread({ title: 't', author_id: 'u1', created_at: ago(60), reply_count: 3 })
+  const old = await s.insertThread({ title: 't', author_id: 'u1', created_at: ago(49 * 3600) })
+  const theirs = await s.insertThread({ title: 't', author_id: 'u2', created_at: ago(60) })
+  assert.equal((await editThread(s, ME, { threadId: replied.id, title: 'new' }, NOW)).status, 200)
+  assert.equal((await editThread(s, ME, { threadId: old.id, title: 'new' }, NOW)).status, 403)
+  assert.equal((await editThread(s, ME, { threadId: theirs.id, title: 'new' }, NOW)).status, 403)
+  assert.equal((await editThread(s, ADMIN, { threadId: theirs.id, title: 'new' }, NOW)).status, 403)
+  assert.equal((await editThread(s, null, { threadId: replied.id, title: 'new' }, NOW)).status, 401)
+  assert.equal((await editThread(s, ME, { threadId: 999, title: 'new' }, NOW)).status, 404)
+  assert.equal((await editThread(s, ME, { threadId: replied.id, title: '  ' }, NOW)).status, 400)
 })

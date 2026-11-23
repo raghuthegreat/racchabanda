@@ -6,7 +6,8 @@ import { ALL_REGION_IDS } from '@/lib/regions'
 export const metadata = { title: 'కొత్త చర్చ · రచ్చబండ', robots: { index: false } }
 
 // /racchabanda/new?word=<word>&region=<region>: the word page's "ఈ పదం గురించి మాట్లాడండి"
-// fills in the word. Logged out: a login link (the site's login returns here afterwards).
+// fills in the word. Logged out the form shows too; its button opens the login pop-up and
+// what was typed is kept for when they come back (the site's login returns here).
 export default async function NewThread({ searchParams }) {
   const sp = await searchParams
   const one = (v) => (Array.isArray(v) ? v[0] : v) || ''
@@ -17,11 +18,7 @@ export default async function NewThread({ searchParams }) {
     <div className="rb-wrap rb-thread">
       <Link className="rb-back" href="/">← రచ్చబండ</Link>
       <h1 className="rb-thread-title">కొత్త చర్చ</h1>
-      {me.user ? (
-        <NewThreadForm word={word} region={region} />
-      ) : (
-        <p className="rb-login">చర్చ మొదలుపెట్టడానికి <a href="/login">Google తో లాగిన్ అవ్వండి</a>. లాగిన్ అయ్యాక ఇక్కడికే తిరిగి వస్తారు.</p>
-      )}
+      <NewThreadForm word={word} region={region} loggedIn={!!me.user} />
     </div>
   )
 }

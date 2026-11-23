@@ -4,8 +4,11 @@ import StickerChip from './StickerChip'
 import { STICKERS } from '@/lib/stickers'
 import { send, LOGIN_URL } from '@/lib/client'
 
+// Logged out, a tap opens the site's login pop-up (components/LoginPopup.js)
+const askLogin = () => (window.yLogin ? window.yLogin('forum_sticker') : (window.location.href = LOGIN_URL))
+
 // A post's stickers (the first post: postId null, or a reply): tap one to add yours or take it
-// back, "+" opens all eight. Logged out, they lead to the login page.
+// back, "+" opens all eight. Logged out, they open the login pop-up.
 export default function StickerBar({ threadId, postId = null, initial, loggedIn }) {
   const [stickers, setStickers] = useState(initial || [])
   const [open, setOpen] = useState(false)
@@ -13,7 +16,7 @@ export default function StickerBar({ threadId, postId = null, initial, loggedIn 
   const [error, setError] = useState('')
 
   async function tap(code) {
-    if (!loggedIn) { window.location.href = LOGIN_URL; return }
+    if (!loggedIn) { askLogin(); return }
     if (busy) return
     setBusy(true); setError('')
     const r = await send('POST', '/stickers', { threadId, postId, sticker: code })
@@ -29,7 +32,7 @@ export default function StickerBar({ threadId, postId = null, initial, loggedIn 
           <StickerChip {...s} />
         </button>
       ))}
-      <button type="button" className="rb-sticker-add" onClick={() => (loggedIn ? setOpen(!open) : (window.location.href = LOGIN_URL))}
+      <button type="button" className="rb-sticker-add" onClick={() => (loggedIn ? setOpen(!open) : askLogin())}
               aria-expanded={open} aria-label="స్టిక్కర్ ఇవ్వండి" title="స్టిక్కర్ ఇవ్వండి">+</button>
       {open && (
         <div className="rb-picker" role="group" aria-label="స్టిక్కర్లు">

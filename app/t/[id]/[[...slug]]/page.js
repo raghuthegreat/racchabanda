@@ -5,12 +5,13 @@ import Avatar from '@/components/shared/Avatar'
 import StickerBar from '@/components/StickerBar'
 import ReplyBox from '@/components/ReplyBox'
 import DeleteButton from '@/components/DeleteButton'
+import EditablePost from '@/components/EditablePost'
 import PostText from '@/components/PostText'
 import { getThread, parseId } from '@/lib/forum'
 import { readDb } from '@/lib/db'
 import { currentMe } from '@/lib/me'
 import { threadPath, timeAgo } from '@/lib/text'
-import { DELETE_WINDOW_MS } from '@/lib/write'
+import { DELETE_WINDOW_MS, EDIT_WINDOW_MS } from '@/lib/write'
 
 // A thread: /racchabanda/t/<id>/<slug>. Any other slug (or none: the word page links
 // /t/<id>) redirects to the thread's own address, so each thread has one URL.
@@ -58,6 +59,10 @@ export default async function ThreadPage({ params }) {
   // The delete button shows when lib/write.js would allow it (the route checks again)
   const mayDelete = (row, isThread) => !!me.user && (me.user.admin || (row.author_id === me.user.id
     && now - new Date(row.created_at) <= DELETE_WINDOW_MS && (!isThread || thread.reply_count === 0)))
+  // Editing: only the writer, within 2 days (admins delete, they don't edit others' words)
+  const mayEdit = (row) => !!me.user && row.author_id === me.user.id && now - new Date(row.created_at) <= EDIT_WINDOW_MS
+  const edited = (row) => row.edited_at && (
+    <span className="rb-edited" title={`సవరించారు: ${timeAgo(row.edited_at, now)}`}> · సవరించారు</span>)
   return (
     <div className="rb-wrap rb-thread">
       <Link className="rb-back" href="/">← రచ్చబండ</Link>
@@ -71,9 +76,11 @@ export default async function ThreadPage({ params }) {
       <article className="rb-post rb-post-first">
         <header className="rb-post-head">
           <Avatar name={thread.author_name} pic={thread.author_pic} size={42} />
-          <span><strong className="rb-who">{thread.author_name || 'ఎవరో'}</strong><span className="rb-when">{timeAgo(thread.created_at, now)}</span></span>
+          <span><strong className="rb-who">{thread.author_name || 'ఎవరో'}</strong><span className="rb-when">{timeAgo(thread.created_at, now)}{edited(thread)}</span></span>
         </header>
-        {thread.body && <PostText text={thread.body} />}
+        <EditablePost kind="thread" id={thread.id} title={thread.title} body={thread.body || ''} editable={mayEdit(thread)}>
+          {thread.body && <PostText text={thread.body} />}
+        </EditablePost>
         <div className="rb-post-foot">
           <StickerBar threadId={thread.id} initial={stickers} loggedIn={loggedIn} />
           {mayDelete(thread, true) && <DeleteButton what="thread" id={thread.id} />}
@@ -86,9 +93,11 @@ export default async function ThreadPage({ params }) {
             <article className="rb-post" key={p.id} id={`post-${p.id}`}>
               <header className="rb-post-head">
                 <Avatar name={p.author_name} pic={p.author_pic} size={34} />
-                <span><strong className="rb-who">{p.author_name || 'ఎవరో'}</strong><span className="rb-when">{timeAgo(p.created_at, now)}</span></span>
+                <span><strong className="rb-who">{p.author_name || 'ఎవరో'}</strong><span className="rb-when">{timeAgo(p.created_at, now)}{edited(p)}</span></span>
               </header>
-              <PostText text={p.body} />
+              <EditablePost kind="post" id={p.id} body={p.body} editable={mayEdit(p)}>
+                <PostText text={p.body} />
+              </EditablePost>
               <div className="rb-post-foot">
                 <StickerBar threadId={thread.id} postId={p.id} initial={p.stickers} loggedIn={loggedIn} />
                 {mayDelete(p, false) && <DeleteButton what="post" id={p.id} />}
@@ -98,11 +107,7 @@ export default async function ThreadPage({ params }) {
         </section>
       )}
 
-      {me.user ? (
-        <ReplyBox threadId={thread.id} />
-      ) : (
-        <p className="rb-login">జవాబు రాయడానికి, స్టిక్కర్ ఇవ్వడానికి <a href="/login">Google తో లాగిన్ అవ్వండి</a>.</p>
-      )}
+      <ReplyBox threadId={thread.id} loggedIn={loggedIn} />
     </div>
   )
 }
