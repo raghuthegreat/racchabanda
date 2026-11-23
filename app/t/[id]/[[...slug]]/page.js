@@ -6,12 +6,14 @@ import StickerBar from '@/components/StickerBar'
 import ReplyBox from '@/components/ReplyBox'
 import DeleteButton from '@/components/DeleteButton'
 import EditablePost from '@/components/EditablePost'
+import PhotoGrid from '@/components/PhotoGrid'
 import PostText from '@/components/PostText'
 import { getThread, parseId } from '@/lib/forum'
 import { readDb } from '@/lib/db'
 import { currentMe } from '@/lib/me'
 import { threadPath, timeAgo } from '@/lib/text'
 import { DELETE_WINDOW_MS, EDIT_WINDOW_MS } from '@/lib/write'
+import { photoBase } from '@/lib/photos'
 
 // A thread: /racchabanda/t/<id>/<slug>. Any other slug (or none: the word page links
 // /t/<id>) redirects to the thread's own address, so each thread has one URL.
@@ -81,6 +83,7 @@ export default async function ThreadPage({ params }) {
         <EditablePost kind="thread" id={thread.id} title={thread.title} body={thread.body || ''} editable={mayEdit(thread)}>
           {thread.body && <PostText text={thread.body} />}
         </EditablePost>
+        <PhotoGrid photos={thread.photos} />
         <div className="rb-post-foot">
           <StickerBar threadId={thread.id} initial={stickers} loggedIn={loggedIn} />
           {mayDelete(thread, true) && <DeleteButton what="thread" id={thread.id} />}
@@ -96,8 +99,9 @@ export default async function ThreadPage({ params }) {
                 <span><strong className="rb-who">{p.author_name || 'ఎవరో'}</strong><span className="rb-when">{timeAgo(p.created_at, now)}{edited(p)}</span></span>
               </header>
               <EditablePost kind="post" id={p.id} body={p.body} editable={mayEdit(p)}>
-                <PostText text={p.body} />
+                {p.body && <PostText text={p.body} />}
               </EditablePost>
+              <PhotoGrid photos={p.photos} />
               <div className="rb-post-foot">
                 <StickerBar threadId={thread.id} postId={p.id} initial={p.stickers} loggedIn={loggedIn} />
                 {mayDelete(p, false) && <DeleteButton what="post" id={p.id} />}
@@ -107,7 +111,7 @@ export default async function ThreadPage({ params }) {
         </section>
       )}
 
-      <ReplyBox threadId={thread.id} loggedIn={loggedIn} />
+      <ReplyBox threadId={thread.id} loggedIn={loggedIn} photosOn={!!photoBase()} />
     </div>
   )
 }

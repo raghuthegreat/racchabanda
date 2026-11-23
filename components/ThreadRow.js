@@ -25,6 +25,7 @@ export default function ThreadRow({ thread, now = new Date() }) {
           {thread.region && <Link className="rb-chip-region" href={`/?region=${encodeURIComponent(thread.region)}`}>{thread.region}</Link>}
           <span>{who} · {timeAgo(thread.last_activity_at, now)}</span>
           {thread.source === 'instagram' && <span>· Instagram నుండి</span>}
+          {thread.photos?.length > 0 && <span aria-label={`${thread.photos.length} ఫోటోలు`}>· <i className="fas fa-camera" aria-hidden="true"></i> {thread.photos.length}</span>}
         </div>
       </div>
       <div className="rb-row-side">

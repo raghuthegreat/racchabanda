@@ -1,7 +1,7 @@
 // node --test: talking to the yaasalu site (lib/site.js) with a fake fetch
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { getMe, notifyReply, siteUrl } from '../lib/site.js'
+import { getMe, notifyReply, siteUrl, deletePhotos } from '../lib/site.js'
 
 const LOGGED_OUT = { user: null, unseen: 0 }
 
@@ -65,4 +65,14 @@ test('notifyReply: nobody to tell, no token, or the site failing -> false, never
   assert.equal(await notifyReply({ to: ['a'], actor: 'u', thread }, { fetch: fakeFetch({ status: 200, body: {} }), env: {} }), false)
   assert.equal(await notifyReply({ to: ['a'], actor: 'u', thread }, { fetch: fakeFetch(new Error('down')), env }), false)
   assert.equal(await notifyReply({ to: ['a'], actor: 'u', thread }, { fetch: fakeFetch({ status: 404, body: {} }), env }), false)
+})
+
+test('deletePhotos posts the addresses to /api/forum/photos/delete with the token; never throws', async () => {
+  const fetch = fakeFetch({ status: 200, body: { deleted: 2 } })
+  assert.equal(await deletePhotos(['a', 'b'], { fetch, env: { SITE_API_URL: 'https://s.test', FORUM_TOKEN: 'tok' } }), true)
+  assert.equal(fetch.calls[0].url, 'https://s.test/api/forum/photos/delete')
+  assert.equal(fetch.calls[0].opts.headers['X-Forum-Token'], 'tok')
+  assert.deepEqual(JSON.parse(fetch.calls[0].opts.body), { urls: ['a', 'b'] })
+  assert.equal(await deletePhotos([], { fetch, env: { FORUM_TOKEN: 'tok' } }), false)
+  assert.equal(await deletePhotos(['a'], { fetch: fakeFetch(new Error('down')), env: { FORUM_TOKEN: 'tok' } }), false)
 })

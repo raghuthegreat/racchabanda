@@ -2,6 +2,7 @@ import Link from 'next/link'
 import NewThreadForm from '@/components/NewThreadForm'
 import { currentMe } from '@/lib/me'
 import { ALL_REGION_IDS } from '@/lib/regions'
+import { photoBase } from '@/lib/photos'
 
 export const metadata = { title: 'కొత్త చర్చ · రచ్చబండ', robots: { index: false } }
 
@@ -18,7 +19,7 @@ export default async function NewThread({ searchParams }) {
     <div className="rb-wrap rb-thread">
       <Link className="rb-back" href="/">← రచ్చబండ</Link>
       <h1 className="rb-thread-title">కొత్త చర్చ</h1>
-      <NewThreadForm word={word} region={region} loggedIn={!!me.user} />
+      <NewThreadForm word={word} region={region} loggedIn={!!me.user} photosOn={!!photoBase()} />
     </div>
   )
 }

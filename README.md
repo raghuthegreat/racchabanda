@@ -16,6 +16,10 @@ browser ─► Cloudflare ─► Heroku: yaasa (nginx) ─┬─► Flask: the s
   `posts` (replies), `reactions` (stickers). People, words and notifications stay in the site's
   Mongo. The public anon key can only read; writes go through this app's server (`app/api/*`,
   rules in `lib/write.js`) with the service-role key.
+- **Photos.** Up to 4 per thread or reply. The browser resizes each (2048px + a 480px
+  thumbnail, re-encoded: no EXIF, so no GPS location) and uploads it straight to the site's S3
+  bucket under `forum/`, with a signature from the site (`/api/forum/photo`, the visitor's own
+  login). Deleting a post asks the site to delete its photos (`/api/forum/photos/delete`).
 - **Look.** The site's own header, footer and stylesheets (`/Static/css/site.css`, `brand.css`),
   plus `app/forum.css`. The site's Telugu typing (`/Static/scripts/telugu-typing.js`) works on
   any text box with class `yc-text`.
@@ -45,6 +49,7 @@ local site (e.g. `http://localhost:5055`) and `FORUM_ORIGINS=http://localhost:30
 | `FORUM_ORIGINS` | Vercel, optional | Extra page addresses allowed to write (local tests). Not needed when the forum is served from the site's own domain |
 | `FORUM_VERCEL_HOST` | site (Heroku) | The Vercel host nginx sends `/racchabanda` to |
 | `FORUM_ENABLED` | site (Heroku) | `1` shows the రచ్చబండ menu link and the word pages' threads box |
+| `PHOTOS_BASE_URL` | Vercel | Where forum photos live: `https://yaasalu-staging.s3.amazonaws.com/forum/` (staging), `https://yaasalu.s3.amazonaws.com/forum/` (prod). Unset: photos off |
 
 The site's side is in the yaasa repo: `backend/forum.py`, branch `forum-v2`.
 
@@ -108,13 +113,18 @@ deployment) + the `yaasalu-staging` Supabase project (schema already applied).
    - delete your own reply within 5 minutes;
    - the ☰ menu and the ప్రాంతాలు dropdown work.
 
+**Photos on staging.** Run `supabase/migrations/002_photos.sql` in `yaasalu-staging`'s SQL Editor
+(after 001), set `PHOTOS_BASE_URL` for Preview in Vercel, give the staging app's IAM user the
+delete permission (yaasa `aws/s3/staging-app-policy.json`, second statement), and deploy the yaasa
+branch that has `/api/forum/photo`.
+
 **Sample data.** Staging has sample threads (authors `sample-...`). Before launch, remove them in
 the SQL Editor: `delete from threads where author_id like 'sample-%';` (their replies and
 stickers go with them).
 
 ## Production (later)
 
-Create `yaasalu-prod`, run the migration there, put its keys in Vercel's **Production**
+Create `yaasalu-prod`, run the migrations there (001, then 002), put its keys in Vercel's **Production**
 environment (and `SITE_API_URL=https://www.yaasalu.com`), add the `SUPABASE_PROD_*` secrets for
 the ping, set the prod site's config vars as in step 5 with the production Vercel host, merge
 `v2` → `main` here and `forum-v2` → `master` in yaasa, then `FORUM_ENABLED=1` on prod.
