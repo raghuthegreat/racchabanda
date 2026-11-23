@@ -3,11 +3,13 @@ import { useRef, useState } from 'react'
 import { uploadPhoto } from '@/lib/upload'
 import { PHOTOS_MAX } from '@/lib/photos'
 
-// "📷 ఫోటో" for the reply box and the new-thread form: pick up to 4 photos (on phones, the camera
-// or the gallery). Each is resized and uploaded at once (lib/upload.js); previews show with ✕
-// to take one out before posting. value / onChange hold the uploaded {full, thumb, w, h} list;
-// onBusy tells the form to wait while uploads run.
-export default function PhotoPicker({ value, onChange, onBusy }) {
+// Picking and uploading forum photos (up to 4; on phones, the camera or the gallery). Each is
+// resized and uploaded at once (lib/upload.js); value / onChange hold the uploaded
+// {full, thumb, w, h} list, onBusy tells the form to wait while uploads run.
+//   usePhotoUploads: the logic, for the chat's message bar (its 📷 sits inside the bar)
+//   PhotoPreviews:   the previews with ✕
+//   PhotoPicker:     both with a "📷 ఫోటో" button, for the new-thread form
+export function usePhotoUploads({ value, onChange, onBusy }) {
   const input = useRef(null)
   const [busy, setBusy] = useState(0)
   const [error, setError] = useState('')
@@ -35,27 +37,38 @@ export default function PhotoPicker({ value, onChange, onBusy }) {
     onBusy && onBusy(false)
   }
 
+  const fileInput = <input ref={input} type="file" accept="image/*" multiple hidden onChange={picked} />
+  return { fileInput, open: () => input.current && input.current.click(), busy, error, room }
+}
+
+export function PhotoPreviews({ value, onChange, busy }) {
+  if (!value.length && !busy) return null
+  return (
+    <div className="rb-photo-previews">
+      {value.map((p, i) => (
+        <span className="rb-photo-preview" key={p.full}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={p.thumb} alt="" />
+          <button type="button" aria-label="ఈ ఫోటో తీసేయండి" onClick={() => onChange(value.filter((_, j) => j !== i))}>✕</button>
+        </span>
+      ))}
+      {Array.from({ length: busy }, (_, i) => <span className="rb-photo-preview rb-photo-loading" key={`b${i}`} aria-label="ఫోటో పంపుతున్నాం" />)}
+    </div>
+  )
+}
+
+export default function PhotoPicker({ value, onChange, onBusy }) {
+  const up = usePhotoUploads({ value, onChange, onBusy })
   return (
     <div className="rb-photos-pick">
-      {(value.length > 0 || busy > 0) && (
-        <div className="rb-photo-previews">
-          {value.map((p, i) => (
-            <span className="rb-photo-preview" key={p.full}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.thumb} alt="" />
-              <button type="button" aria-label="ఈ ఫోటో తీసేయండి" onClick={() => onChange(value.filter((_, j) => j !== i))}>✕</button>
-            </span>
-          ))}
-          {Array.from({ length: busy }, (_, i) => <span className="rb-photo-preview rb-photo-loading" key={`b${i}`} aria-label="ఫోటో పంపుతున్నాం" />)}
-        </div>
-      )}
-      <input ref={input} type="file" accept="image/*" multiple hidden onChange={picked} />
-      {room > 0 && (
-        <button type="button" className="rb-photo-add" onClick={() => input.current.click()}>
+      <PhotoPreviews value={value} onChange={onChange} busy={up.busy} />
+      {up.fileInput}
+      {up.room > 0 && (
+        <button type="button" className="rb-photo-add" onClick={up.open}>
           <i className="fas fa-camera" aria-hidden="true"></i> ఫోటో{value.length ? ` (${value.length}/${PHOTOS_MAX})` : ''}
         </button>
       )}
-      {error && <span className="rb-error" role="alert">{error}</span>}
+      {up.error && <span className="rb-error" role="alert">{up.error}</span>}
     </div>
   )
 }
