@@ -1,7 +1,7 @@
 // node --test: the rules for writing (lib/write.js) against an in-memory store
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { createThread, createReply, toggleSticker, deleteReply, deleteThread, editReply, editThread, originAllowed, allowedOrigins, LIMITS, EDIT_WINDOW_MS } from '../lib/write.js'
+import { markRead, createThread, createReply, toggleSticker, deleteReply, deleteThread, editReply, editThread, originAllowed, allowedOrigins, LIMITS, EDIT_WINDOW_MS } from '../lib/write.js'
 
 const ME = { id: 'u1', name: 'సీత', pic: 'https://x/s.jpg', admin: false }
 const OTHER = { id: 'u2', name: 'రఘు', pic: '', admin: false }
@@ -30,6 +30,8 @@ function memStore() {
     },
     async removeReaction(m) { s.reactions = s.reactions.filter((r) => !(r.thread_id === m.thread_id && r.post_id === m.post_id && r.user_id === m.user_id && r.sticker === m.sticker)) },
     async reactionsOf(threadId, postId) { return s.reactions.filter((r) => r.thread_id === threadId && r.post_id === postId) },
+    reads: [],
+    async markRead(userId, threadId) { s.reads.push([userId, threadId]) },
     async updateThread(id, fields) { const t = s.threads.find((x) => x.id === id); Object.assign(t, fields); return t },
     async updatePost(id, fields) { const p = s.posts.find((x) => x.id === id); Object.assign(p, fields); return p },
   }
@@ -339,4 +341,15 @@ test('deleting a post without photos asks nothing', async () => {
   const asked = []
   await deleteReply(s, ME, { postId: p.id }, NOW, { deletePhotos: async (urls) => asked.push(urls) })
   assert.deepEqual(asked, [])
+})
+
+// ---------- reading ----------
+test('markRead: logged out 401; a missing thread 404; otherwise records it for this person', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  assert.equal((await markRead(s, null, { threadId: t.id })).status, 401)
+  assert.equal((await markRead(s, ME, { threadId: 999 })).status, 404)
+  assert.equal((await markRead(s, ME, { threadId: 'x' })).status, 404)
+  assert.equal((await markRead(s, ME, { threadId: t.id })).status, 200)
+  assert.deepEqual(s.reads, [['u1', t.id]])
 })

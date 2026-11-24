@@ -3,7 +3,8 @@ import TitleBand from '@/components/TitleBand'
 import Chips from '@/components/Chips'
 import ChatList from '@/components/chat/ChatList'
 import { listThreads, parseId } from '@/lib/forum'
-import { readDb } from '@/lib/db'
+import { readDb, writeDb } from '@/lib/db'
+import { unreadCounts } from '@/lib/reads'
 import { currentMe } from '@/lib/me'
 
 // The front page as a chat list (like WhatsApp's): every thread with its newest message, latest
@@ -20,6 +21,7 @@ export default async function Home({ searchParams }) {
 
   const me = await currentMe()
   const { threads, more } = await listThreads(readDb(), { word, region, words, page }, me.user?.id)
+  const unread = await unreadCounts(writeDb(), me.user?.id, threads.map((t) => t.id))
 
   const query = (extra) => {
     const q = new URLSearchParams()
@@ -48,7 +50,7 @@ export default async function Home({ searchParams }) {
         )}
 
         {threads.length ? (
-          <ChatList threads={threads} />
+          <ChatList threads={threads} unread={unread} />
         ) : (
           <p className="rb-empty">
             {page > 1 ? 'ఇంకా చర్చలు లేవు.' : 'ఇక్కడ ఇంకా చర్చ లేదు. మొదటి మాట మీదే కావచ్చు!'}{' '}

@@ -4,8 +4,10 @@ import ReplyBox from '@/components/ReplyBox'
 import Bubble from '@/components/chat/Bubble'
 import ChatBar from '@/components/chat/ChatBar'
 import ChatList from '@/components/chat/ChatList'
+import MarkRead from '@/components/chat/MarkRead'
 import { getThread, listThreads, parseId } from '@/lib/forum'
-import { readDb } from '@/lib/db'
+import { readDb, writeDb } from '@/lib/db'
+import { unreadCounts } from '@/lib/reads'
 import { currentMe } from '@/lib/me'
 import { threadPath } from '@/lib/text'
 import { chatItems, clockTime, dayLabel } from '@/lib/chat'
@@ -60,6 +62,9 @@ export default async function ThreadPage({ params }) {
   const meId = me.user?.id || null
   const loggedIn = !!me.user
   const { threads } = await listThreads(readDb(), {}, meId)   // the desktop's left pane
+  // Unread counts for the list, and where this thread's new messages start (logged in only)
+  const unread = await unreadCounts(writeDb(), meId, [...new Set([...threads.map((t) => t.id), thread.id])])
+  const firstUnread = unread.get(thread.id)?.firstUnread || null
   // What lib/write.js would allow (the routes check again)
   const age = (row) => now - new Date(row.created_at)
   const mayEdit = (row) => !!meId && row.author_id === meId && age(row) <= EDIT_WINDOW_MS
@@ -74,7 +79,7 @@ export default async function ThreadPage({ params }) {
           <h2 className="rb-chat-side-title">రచ్చబండ</h2>
           <a className="rb-btn rb-btn-primary rb-btn-small" href="/racchabanda/new">+ కొత్త చర్చ</a>
         </div>
-        <ChatList threads={threads} activeId={thread.id} now={now} />
+        <ChatList threads={threads} activeId={thread.id} now={now} unread={unread} />
       </aside>
 
       <section className="rb-chat" aria-label={thread.title}>
@@ -93,16 +98,18 @@ export default async function ThreadPage({ params }) {
             )}
           </Bubble>
 
-          {chatItems(posts, meId, now).map((item, i) => (item.type === 'day'
-            ? <div className="rb-day" key={`d${i}`}><span>{item.label}</span></div>
-            : <Bubble key={item.post.id} threadId={thread.id} id={item.post.id} authorName={item.post.author_name} authorPic={item.post.author_pic}
+          {chatItems(posts, meId, now).flatMap((item, i) => (item.type === 'day'
+            ? [<div className="rb-day" key={`d${i}`}><span>{item.label}</span></div>]
+            : [item.post.id === firstUnread && <div className="rb-unread-line" id="rb-unread" key="unread"><span>కొత్త మాటలు</span></div>,
+               <Bubble key={item.post.id} threadId={thread.id} id={item.post.id} authorName={item.post.author_name} authorPic={item.post.author_pic}
                       body={item.post.body} photos={item.post.photos} time={item.time} edited={!!item.post.edited_at}
                       mine={item.mine} first={item.first} last={item.last} initialStickers={item.post.stickers} loggedIn={loggedIn}
-                      editable={mayEdit(item.post)} deletable={mayDelete(item.post, false)} />))}
+                      editable={mayEdit(item.post)} deletable={mayDelete(item.post, false)} />]))}
           {posts.length === 0 && <p className="rb-chat-empty">ఇంకా ఎవరూ జవాబు చెప్పలేదు. మొదటి మాట మీదే!</p>}
           <div id="rb-chat-end" />
         </div>
         <ReplyBox threadId={thread.id} loggedIn={loggedIn} photosOn={!!photoBase()} />
+        {loggedIn && <MarkRead threadId={thread.id} firstUnread={firstUnread} />}
       </section>
     </div>
   )

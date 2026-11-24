@@ -330,3 +330,12 @@ textarea.rb-input { resize: vertical; line-height: 1.6; }
   .rb-chat-welcome { display: flex; flex-direction: column; justify-content: center; gap: 1rem; padding: 2rem; background: var(--brand-sunk); }
   .rb-chat-welcome-hint { margin: 0; text-align: center; color: var(--brand-muted); }
 }
+
+/* Unread counts (lib/reads.js) */
+.rb-chat-row-second { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.rb-chat-row-second .rb-chat-row-last { flex: 1; min-width: 0; }
+.rb-unread { flex-shrink: 0; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand-leaf); color: #fff;
+             font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.rb-chat-row-time-new { color: var(--brand-leaf); font-weight: 700; }
+.rb-unread-line { display: flex; align-items: center; gap: 0.6rem; margin: 0.7rem 0 0.2rem; color: var(--brand-leaf); font-size: 0.78rem; font-weight: 700; scroll-margin-top: 0.5rem; }
+.rb-unread-line::before, .rb-unread-line::after { content: ""; flex: 1; height: 1px; background: #c9d3bb; }
