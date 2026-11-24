@@ -155,6 +155,59 @@ test('createReply: per-minute limit -> 429', async () => {
   assert.equal((await createReply(s, ME, { threadId: t.id, body: 'x' }, { now: NOW })).status, 429)
 })
 
+// The store's lookups take a tick to answer, and say when each starts and ends, so a test can
+// see which of them were asked for together
+function timedStore() {
+  const s = memStore()
+  const log = []
+  for (const name of ['getThread', 'countSince', 'participants']) {
+    const real = s[name]
+    s[name] = async (...args) => {
+      log.push(`start ${name}`)
+      await new Promise((r) => setImmediate(r))
+      log.push(`end ${name}`)
+      return real(...args)
+    }
+  }
+  return { s, log }
+}
+const startedTogether = (log) => log.slice(0, log.findIndex((e) => e.startsWith('end')))
+
+test('createReply: asks for the thread, the limits and the earlier repliers together', async () => {
+  const { s, log } = timedStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  log.length = 0
+  assert.equal((await createReply(s, ME, { threadId: t.id, body: 'x' }, { now: NOW })).status, 201)
+  const before = startedTogether(log)
+  assert.ok(before.includes('start getThread'), log.join(', '))
+  assert.ok(before.includes('start participants'), log.join(', '))
+  assert.equal(before.filter((e) => e === 'start countSince').length, LIMITS.post.length, 'every limit window at once')
+})
+
+test('createReply: the daily limit alone still refuses', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  const [secs, most] = LIMITS.post[1]
+  for (let i = 0; i < most; i++) s.posts.push({ id: 500 + i, thread_id: t.id, author_id: 'u1', created_at: ago(Math.max(secs / 2, LIMITS.post[0][0] * 2)) })
+  assert.equal((await createReply(s, ME, { threadId: t.id, body: 'x' }, { now: NOW })).status, 429)
+})
+
+test('createReply: the same checks win as before: missing thread 404, empty 400, even when the limit is full', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  const [secs, most] = LIMITS.post[0]
+  for (let i = 0; i < most; i++) s.posts.push({ id: 500 + i, thread_id: t.id, author_id: 'u1', created_at: ago(secs / 2) })
+  assert.equal((await createReply(s, ME, { threadId: 999, body: 'x' }, { now: NOW })).status, 404)
+  assert.equal((await createReply(s, ME, { threadId: t.id, body: ' ' }, { now: NOW })).status, 400)
+  assert.equal(s.posts.length, most, 'nothing saved')
+})
+
+test('createThread: every limit window is counted at once', async () => {
+  const { s, log } = timedStore()
+  assert.equal((await createThread(s, ME, { title: 'కొత్త' }, NOW)).status, 201)
+  assert.equal(startedTogether(log).filter((e) => e === 'start countSince').length, LIMITS.thread.length)
+})
+
 // ---------- stickers ----------
 test('toggleSticker: logged out 401; unknown sticker 400; missing thread 404; a reply from another thread 404', async () => {
   const s = memStore()

@@ -5,16 +5,21 @@ import { send } from '@/lib/client'
 import { BODY_MAX } from '@/lib/text'
 import { saveDraft, takeDraft, replyDraftKey } from '@/lib/drafts'
 import { usePhotoUploads, PhotoPreviews } from './PhotoPicker'
+import { usePending } from './chat/Pending'
 
 // The chat's message bar, at the bottom of the conversation: 📷, a box that grows as you type
 // (Telugu typing: class "yc-text" and the అ / A switch .yt-toggle, from the site's
 // /Static/scripts/telugu-typing.js), and ➤. A reply may be only photos.
 // Logged out, ➤ reads "లాగిన్ అయి పంపండి": it opens the site's login pop-up and what was typed is
 // kept (lib/drafts.js) and put back here after Google, for them to send themselves.
+// Sending: the reply shows at once at the end of the conversation (chat/Pending.js) and the box
+// clears; when the server has saved it the page refreshes and the real bubble takes its place.
+// If sending fails, the bubble goes and the text and photos come back to the box.
 const MAX_LINES_PX = 140
 
 export default function ReplyBox({ threadId, loggedIn, photosOn = false }) {
   const router = useRouter()
+  const pending = usePending()
   const box = useRef(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -50,16 +55,34 @@ export default function ReplyBox({ threadId, loggedIn, photosOn = false }) {
       return
     }
     if (!body && !photos.length) { box.current.focus(); return }
-    setBusy(true); setError('')
-    const r = await send('POST', '/posts', { threadId, body, photos })
-    setBusy(false)
-    if (!r.ok) { setError(r.data.message || 'పంపలేకపోయాం'); return }
+    setError('')
+    const sentPhotos = photos
+    const tmp = `p${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const toEnd = () => document.getElementById('rb-chat-end')?.scrollIntoView({ behavior: 'smooth', block: 'end' })
     box.current.value = ''
     grow()
     setPhotos([])
+    if (pending) {
+      pending.add({ key: tmp, body, photos: sentPhotos })
+      requestAnimationFrame(toEnd)
+    } else {
+      setBusy(true)
+    }
+    const r = await send('POST', '/posts', { threadId, body, photos: sentPhotos })
+    setBusy(false)
+    if (!r.ok) {
+      pending?.drop(tmp)
+      // Back in the box, unless they have started typing something new meanwhile
+      if (box.current && !box.current.value.trim()) { box.current.value = body; grow() }
+      setPhotos((now) => (now.length ? now : sentPhotos))
+      setError(r.data.message || 'పంపలేకపోయాం')
+      return
+    }
+    const saved = r.data.post?.id
+    if (saved) pending?.sent(tmp, saved)
+    else pending?.drop(tmp)   // no id to match the real bubble by: let the refresh show it
     router.refresh()
-    // The new message lands at the end of the conversation
-    setTimeout(() => document.getElementById('rb-chat-end')?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 700)
+    if (!pending) setTimeout(toEnd, 700)
   }
 
   const canPhoto = loggedIn && photosOn && up.room > 0
