@@ -6,14 +6,18 @@ import { listThreads, getThread, parseId, PAGE_SIZE } from '../lib/forum.js'
 
 function fakeDb(answers) {
   const queries = []
+  const events = []   // "ask <table>" when a query is built, "wait <table>" when it is awaited
   return {
     queries,
+    events,
     from(table) {
       const q = { table, calls: [] }
       queries.push(q)
+      events.push(`ask ${table}`)
       const builder = new Proxy({}, {
         get(_, name) {
           if (name === 'then') {
+            events.push(`wait ${table}`)
             const a = answers[table]
             const out = typeof a === 'function' ? a(q) : a
             return (resolve) => resolve(out || { data: [], error: null })
@@ -110,8 +114,14 @@ test('getThread: the thread, its replies in order, stickers per post and on the 
   assert.deepEqual(out.posts.map((p) => p.stickers.map((s) => [s.code, s.n, s.mine])), [[], [['hahha', 2, true]]])
 })
 
-test('getThread: a missing thread -> null, without asking for replies', async () => {
+test('getThread: the thread, its replies and its stickers are asked for together', async () => {
+  const db = fakeDb({ threads: { data: T(12), error: null } })
+  await getThread(db, 12)
+  const firstWait = db.events.findIndex((e) => e.startsWith('wait'))
+  assert.deepEqual(db.events.slice(0, firstWait).sort(), ['ask posts', 'ask reactions', 'ask threads'], db.events.join(', '))
+})
+
+test('getThread: a missing thread -> null (the replies asked for alongside are ignored)', async () => {
   const db = fakeDb({ threads: { data: null, error: null } })
   assert.equal(await getThread(db, 5), null)
-  assert.equal(db.queries.length, 1)
 })

@@ -5,6 +5,7 @@ import Bubble from '@/components/chat/Bubble'
 import ChatBar from '@/components/chat/ChatBar'
 import ChatList from '@/components/chat/ChatList'
 import MarkRead from '@/components/chat/MarkRead'
+import { PendingProvider, PendingReplies } from '@/components/chat/Pending'
 import { getThread, listThreads, parseId } from '@/lib/forum'
 import { readDb, writeDb } from '@/lib/db'
 import { unreadCounts } from '@/lib/reads'
@@ -49,9 +50,11 @@ export async function generateMetadata({ params }) {
 
 export default async function ThreadPage({ params }) {
   const { id, slug } = await params
-  const data = await loadThread(id)
-  if (!data) notFound()
   const me = await currentMe()
+  const meId = me.user?.id || null
+  // The thread and the desktop's left-pane list are asked for together
+  const [data, list] = await Promise.all([loadThread(id), listThreads(readDb(), {}, meId)])
+  if (!data) notFound()
   const { thread, stickers, posts } = data
   const want = threadPath(thread)
   // Compare in one form: the address's slug segments, decoded then encoded like threadPath
@@ -59,9 +62,8 @@ export default async function ThreadPage({ params }) {
   if (have !== want) permanentRedirect(want)
 
   const now = new Date()
-  const meId = me.user?.id || null
   const loggedIn = !!me.user
-  const { threads } = await listThreads(readDb(), {}, meId)   // the desktop's left pane
+  const { threads } = list
   // Unread counts for the list, and where this thread's new messages start (logged in only)
   const unread = await unreadCounts(writeDb(), meId, [...new Set([...threads.map((t) => t.id), thread.id])])
   const firstUnread = unread.get(thread.id)?.firstUnread || null
@@ -82,6 +84,7 @@ export default async function ThreadPage({ params }) {
         <ChatList threads={threads} activeId={thread.id} now={now} unread={unread} />
       </aside>
 
+      <PendingProvider>
       <section className="rb-chat" aria-label={thread.title}>
         <ChatBar thread={thread} messages={posts.length + 1} people={people} />
         <div className="rb-chat-scroll">
@@ -106,11 +109,13 @@ export default async function ThreadPage({ params }) {
                       mine={item.mine} first={item.first} last={item.last} initialStickers={item.post.stickers} loggedIn={loggedIn}
                       editable={mayEdit(item.post)} deletable={mayDelete(item.post, false)} />]))}
           {posts.length === 0 && <p className="rb-chat-empty">ఇంకా ఎవరూ జవాబు చెప్పలేదు. మొదటి మాట మీదే!</p>}
+          <PendingReplies knownIds={posts.map((p) => p.id)} />
           <div id="rb-chat-end" />
         </div>
         <ReplyBox threadId={thread.id} loggedIn={loggedIn} photosOn={!!photoBase()} />
         {loggedIn && <MarkRead threadId={thread.id} firstUnread={firstUnread} />}
       </section>
+      </PendingProvider>
     </div>
   )
 }

@@ -339,3 +339,7 @@ textarea.rb-input { resize: vertical; line-height: 1.6; }
 .rb-chat-row-time-new { color: var(--brand-leaf); font-weight: 700; }
 .rb-unread-line { display: flex; align-items: center; gap: 0.6rem; margin: 0.7rem 0 0.2rem; color: var(--brand-leaf); font-size: 0.78rem; font-weight: 700; scroll-margin-top: 0.5rem; }
 .rb-unread-line::before, .rb-unread-line::after { content: ""; flex: 1; height: 1px; background: #c9d3bb; }
+
+/* A reply on its way (components/chat/Pending.js): your bubble, a little faded until saved */
+.rb-msg-pending .rb-bubble { opacity: 0.7; }
+.rb-chat-empty:has(~ .rb-msg-pending) { display: none; }
