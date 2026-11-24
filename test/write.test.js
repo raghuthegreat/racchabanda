@@ -1,7 +1,7 @@
 // node --test: the rules for writing (lib/write.js) against an in-memory store
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { createThread, createReply, toggleSticker, deleteReply, deleteThread, editReply, editThread, originAllowed, allowedOrigins, LIMITS, EDIT_WINDOW_MS } from '../lib/write.js'
+import { markRead, createThread, createReply, toggleSticker, deleteReply, deleteThread, editReply, editThread, originAllowed, allowedOrigins, LIMITS, EDIT_WINDOW_MS } from '../lib/write.js'
 
 const ME = { id: 'u1', name: 'సీత', pic: 'https://x/s.jpg', admin: false }
 const OTHER = { id: 'u2', name: 'రఘు', pic: '', admin: false }
@@ -21,6 +21,7 @@ function memStore() {
     async insertPost(row) { const p = { id: next++, created_at: NOW.toISOString(), ...row }; s.posts.push(p); return p },
     async getPost(id) { return s.posts.find((p) => p.id === id) || null },
     async participants(threadId) { return [...new Set(s.posts.filter((p) => p.thread_id === threadId).map((p) => p.author_id))] },
+    async threadPhotos(threadId) { return [...(s.threads.find((t) => t.id === threadId)?.photos || []), ...s.posts.filter((p) => p.thread_id === threadId).flatMap((p) => p.photos || [])] },
     async deletePost(id) { s.posts = s.posts.filter((p) => p.id !== id); s.reactions = s.reactions.filter((r) => r.post_id !== id) },
     async deleteThread(id) { s.threads = s.threads.filter((t) => t.id !== id); s.posts = s.posts.filter((p) => p.thread_id !== id); s.reactions = s.reactions.filter((r) => r.thread_id !== id) },
     async addReaction(row) {
@@ -29,6 +30,8 @@ function memStore() {
     },
     async removeReaction(m) { s.reactions = s.reactions.filter((r) => !(r.thread_id === m.thread_id && r.post_id === m.post_id && r.user_id === m.user_id && r.sticker === m.sticker)) },
     async reactionsOf(threadId, postId) { return s.reactions.filter((r) => r.thread_id === threadId && r.post_id === postId) },
+    reads: [],
+    async markRead(userId, threadId) { s.reads.push([userId, threadId]) },
     async updateThread(id, fields) { const t = s.threads.find((x) => x.id === id); Object.assign(t, fields); return t },
     async updatePost(id, fields) { const p = s.posts.find((x) => x.id === id); Object.assign(p, fields); return p },
   }
@@ -280,4 +283,73 @@ test('editThread: even after replies (only the writer, within 2 days); not other
   assert.equal((await editThread(s, null, { threadId: replied.id, title: 'new' }, NOW)).status, 401)
   assert.equal((await editThread(s, ME, { threadId: 999, title: 'new' }, NOW)).status, 404)
   assert.equal((await editThread(s, ME, { threadId: replied.id, title: '  ' }, NOW)).status, 400)
+})
+
+// ---------- photos ----------
+const PB = 'https://yaasalu-staging.s3.amazonaws.com/forum/'
+const PH = (n) => ({ full: `${PB}2026-11/${'b'.repeat(15)}${n}.jpg`, thumb: `${PB}2026-11/${'b'.repeat(15)}${n}-t.jpg`, w: 2048, h: 1536 })
+
+test('createThread / createReply keep cleaned photos', async () => {
+  const s = memStore()
+  const r = await createThread(s, ME, { title: 'ఫోటో', photos: [PH(1)] }, NOW, { photoBase: PB })
+  assert.equal(r.status, 201)
+  assert.deepEqual(s.threads[0].photos, [PH(1)])
+  const r2 = await createReply(s, ME, { threadId: s.threads[0].id, body: 'ఇదిగో', photos: [PH(2), PH(3)] }, { now: NOW, photoBase: PB })
+  assert.equal(r2.status, 201)
+  assert.deepEqual(s.posts[0].photos, [PH(2), PH(3)])
+})
+
+test('a reply may be only photos; with neither text nor photos -> 400', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  assert.equal((await createReply(s, ME, { threadId: t.id, body: '  ', photos: [PH(1)] }, { now: NOW, photoBase: PB })).status, 201)
+  assert.equal(s.posts[0].body, '')
+  assert.equal((await createReply(s, ME, { threadId: t.id, body: '  ', photos: [] }, { now: NOW, photoBase: PB })).status, 400)
+})
+
+test('photos from elsewhere, or with photos switched off -> 400, nothing saved', async () => {
+  const s = memStore()
+  const evil = [{ ...PH(1), full: 'https://evil.example/forum/x.jpg' }]
+  assert.equal((await createThread(s, ME, { title: 't', photos: evil }, NOW, { photoBase: PB })).status, 400)
+  assert.equal((await createThread(s, ME, { title: 't', photos: [PH(1)] }, NOW, { photoBase: null })).status, 400)
+  assert.equal(s.threads.length, 0)
+})
+
+test('deleting a reply asks the site to delete its photos; a failure there still deletes the reply', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  const p = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: '', photos: [PH(1)], created_at: ago(60) })
+  const asked = []
+  assert.equal((await deleteReply(s, ME, { postId: p.id }, NOW, { deletePhotos: async (urls) => { asked.push(urls); throw new Error('site down') } })).status, 200)
+  assert.deepEqual(asked, [[PH(1).full, PH(1).thumb]])
+  assert.equal(s.posts.length, 0)
+})
+
+test("deleting a thread asks to delete its own photos and all its replies' photos", async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u1', created_at: ago(60), photos: [PH(1)] })
+  await s.insertPost({ thread_id: t.id, author_id: 'u2', body: 'x', photos: [PH(2)] })
+  const asked = []
+  assert.equal((await deleteThread(s, ADMIN, { threadId: t.id }, NOW, { deletePhotos: async (urls) => asked.push(urls) })).status, 200)
+  assert.deepEqual(asked[0].sort(), [PH(1).full, PH(1).thumb, PH(2).full, PH(2).thumb].sort())
+})
+
+test('deleting a post without photos asks nothing', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  const p = await s.insertPost({ thread_id: t.id, author_id: 'u1', body: 'x', created_at: ago(60) })
+  const asked = []
+  await deleteReply(s, ME, { postId: p.id }, NOW, { deletePhotos: async (urls) => asked.push(urls) })
+  assert.deepEqual(asked, [])
+})
+
+// ---------- reading ----------
+test('markRead: logged out 401; a missing thread 404; otherwise records it for this person', async () => {
+  const s = memStore()
+  const t = await s.insertThread({ title: 't', author_id: 'u2' })
+  assert.equal((await markRead(s, null, { threadId: t.id })).status, 401)
+  assert.equal((await markRead(s, ME, { threadId: 999 })).status, 404)
+  assert.equal((await markRead(s, ME, { threadId: 'x' })).status, 404)
+  assert.equal((await markRead(s, ME, { threadId: t.id })).status, 200)
+  assert.deepEqual(s.reads, [['u1', t.id]])
 })

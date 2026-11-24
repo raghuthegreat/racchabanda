@@ -5,16 +5,19 @@ import { send } from '@/lib/client'
 import { REGIONS, regionId, regionLabel } from '@/lib/regions'
 import { TITLE_MAX, BODY_MAX } from '@/lib/text'
 import { saveDraft, takeDraft, NEW_THREAD_DRAFT_KEY } from '@/lib/drafts'
+import PhotoPicker from './PhotoPicker'
 
 // Start a thread: a title, what you want to say, and optionally the word it is about (filled in
 // when coming from a word page) and a region. Text fields type Telugu like the site (yc-text).
 // Shown logged out too: the button opens the site's login pop-up, and all four fields are kept
 // (lib/drafts.js) and put back when they return from Google.
-export default function NewThreadForm({ word = '', region = '', loggedIn }) {
+export default function NewThreadForm({ word = '', region = '', loggedIn, photosOn = false }) {
   const router = useRouter()
   const form = useRef(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [photos, setPhotos] = useState([])
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (!loggedIn) return
@@ -39,7 +42,7 @@ export default function NewThreadForm({ word = '', region = '', loggedIn }) {
     }
     if (!input.title.trim()) { setError('శీర్షిక రాయండి'); return }
     setBusy(true); setError('')
-    const r = await send('POST', '/threads', input)
+    const r = await send('POST', '/threads', { ...input, photos })
     if (!r.ok) { setBusy(false); setError(r.data.message || 'సేవ్ కాలేదు'); return }
     router.push(r.data.path)
   }
@@ -53,6 +56,8 @@ export default function NewThreadForm({ word = '', region = '', loggedIn }) {
       <label htmlFor="rb-body">మీ మాట</label>
       <textarea id="rb-body" name="body" className="yc-text rb-input" rows={6} maxLength={BODY_MAX}
                 placeholder="English అక్షరాలతో రాయండి, తెలుగులోకి మారుతుంది (amma → అమ్మ)" />
+
+      {loggedIn && photosOn && <PhotoPicker value={photos} onChange={setPhotos} onBusy={setUploading} />}
 
       <div className="rb-form-row">
         <div>
@@ -77,8 +82,8 @@ export default function NewThreadForm({ word = '', region = '', loggedIn }) {
         <span className="yt-toggle"></span>
         {!loggedIn && <span className="rb-reply-note">మీ పేరుతో కనిపిస్తుంది. Google తో ఒక్క క్లిక్, కొత్త పాస్‌వర్డ్ అక్కర్లేదు.</span>}
         {error && <span className="rb-error" role="alert">{error}</span>}
-        <button type="submit" className="rb-btn rb-btn-primary" disabled={busy}>
-          {loggedIn ? (busy ? 'పంపుతున్నాం…' : 'చర్చ మొదలుపెట్టండి') : <><i className="fab fa-google" aria-hidden="true"></i> లాగిన్ అయి చర్చ మొదలుపెట్టండి</>}
+        <button type="submit" className="rb-btn rb-btn-primary" disabled={busy || uploading}>
+          {loggedIn ? (busy ? 'పంపుతున్నాం…' : uploading ? 'ఫోటో పంపుతున్నాం…' : 'చర్చ మొదలుపెట్టండి') : <><i className="fab fa-google" aria-hidden="true"></i> లాగిన్ అయి చర్చ మొదలుపెట్టండి</>}
         </button>
       </div>
     </form>

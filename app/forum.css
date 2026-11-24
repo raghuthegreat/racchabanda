@@ -169,3 +169,173 @@ textarea.rb-input { resize: vertical; line-height: 1.6; }
 .rb-edit:hover { color: var(--brand-leaf); }
 .rb-edit-form { display: flex; flex-direction: column; gap: 0.5rem; }
 .rb-edited { color: var(--brand-muted); }
+
+/* Photos (components/PhotoPicker.js, PhotoGrid.js) */
+.rb-photos-pick { display: flex; flex-direction: column; gap: 0.5rem; }
+.rb-photo-add { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.4rem; min-height: 40px; padding: 0 0.9rem;
+                border: 1px dashed var(--brand-border); border-radius: 999px; background: var(--brand-surface); color: var(--brand-ink);
+                font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+.rb-photo-add:hover { border-color: var(--brand-leaf); color: var(--brand-leaf); }
+.rb-photo-previews { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.rb-photo-preview { position: relative; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: var(--brand-sunk); }
+.rb-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.rb-photo-preview button { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border: 0; border-radius: 50%;
+                           background: rgba(29, 31, 28, 0.7); color: #fff; font-size: 0.8rem; line-height: 1; cursor: pointer; }
+.rb-photo-loading { animation: rb-pulse 1.2s ease-in-out infinite; }
+@keyframes rb-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .rb-photo-loading { animation: none; } }
+.rb-photo-grid { display: grid; gap: 0.4rem; max-width: 560px; }
+.rb-photo-grid-1 { grid-template-columns: minmax(0, 1fr); max-width: 420px; }
+.rb-photo-grid-2, .rb-photo-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rb-photo-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rb-photo { display: block; border-radius: 10px; overflow: hidden; background: var(--brand-sunk); }
+.rb-photo img { display: block; width: 100%; height: auto; }
+.rb-photo-grid-2 .rb-photo img, .rb-photo-grid-3 .rb-photo img, .rb-photo-grid-4 .rb-photo img { aspect-ratio: 1; object-fit: cover; }
+
+/* ======================= The chat look (components/chat/*) =======================
+   Phones (< 768px): the front page is a chat list; a thread fills the screen with a compact chat
+   bar instead of the site's header, the messages, and the message bar at the bottom.
+   Desktop: the chat list on the left, the conversation (or the welcome) on the right. */
+
+.rb-desktop-only { display: none; }
+.rb-btn-small { min-height: 36px; padding: 0 0.9rem; font-size: 0.88rem; }
+
+/* The chat list */
+.rb-list-chat { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--brand-line); }
+.rb-chat-row { display: flex; gap: 0.75rem; align-items: center; padding: 0.7rem 1rem; border-bottom: 1px solid #f0ede7;
+               color: var(--brand-ink) !important; text-decoration: none; }
+.rb-chat-row:hover { background: var(--brand-sunk); }
+.rb-chat-row-on { background: var(--brand-leaf-soft); }
+.rb-chat-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.rb-chat-row-top { display: flex; align-items: baseline; gap: 0.5rem; }
+.rb-chat-row-title { flex: 1; min-width: 0; font-weight: 700; font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rb-chat-row-title .rb-pin { margin-right: 0.35rem; }
+.rb-chat-row-time { flex-shrink: 0; font-size: 0.78rem; color: var(--brand-muted); }
+.rb-chat-row-last { font-size: 0.86rem; color: var(--brand-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rb-chat-row-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.15rem; font-size: 0.78rem; color: var(--brand-muted); }
+.rb-chat-row-tags .rb-chip-word { font-size: 0.75rem; padding: 0 0.45rem; }
+
+.rb-chat-side-head { display: flex; align-items: center; gap: 0.75rem; padding: 0.9rem 1rem 0.3rem; }
+.rb-chat-side-title { flex: 1; margin: 0; font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+.rb-chat-side-tag { display: block; font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; color: var(--brand-mud); }
+.rb-chat-side .rb-chips { margin: 0.4rem 0 0.6rem; padding: 0 1rem 0.2rem; }
+.rb-chat-side .rb-filter, .rb-chat-side .rb-empty { padding: 0 1rem; }
+
+/* Floating "కొత్త చర్చ" (phones) */
+.rb-fab { position: fixed; right: 1rem; bottom: calc(1.2rem + env(safe-area-inset-bottom)); z-index: 20; display: inline-flex; align-items: center; gap: 0.45rem;
+          padding: 0.8rem 1.15rem; border-radius: 999px; background: var(--brand-leaf); color: #fff !important; font-weight: 700;
+          text-decoration: none; box-shadow: 0 6px 16px rgba(58, 85, 48, 0.35); }
+.rb-chat-welcome { display: none; }
+
+/* The conversation */
+.rb-chat { display: flex; flex-direction: column; min-height: 0; background: var(--brand-sunk); }
+.rb-chatbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.75rem; background: var(--brand-surface);
+              border-bottom: 1px solid var(--brand-line); flex-shrink: 0; }
+.rb-chatbar-back { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; color: var(--brand-ink) !important; }
+.rb-chatbar-mark { display: inline-flex; flex-shrink: 0; }
+.rb-chatbar-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.rb-chatbar-title { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rb-chatbar-meta { font-size: 0.78rem; color: var(--brand-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rb-chatbar-meta a { color: var(--brand-mud) !important; font-weight: 600; text-decoration: none; }
+.rb-chat-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 0.75rem 0.65rem 0.5rem; display: flex; flex-direction: column; }
+.rb-chat-empty { align-self: center; margin: 1.5rem 0; color: var(--brand-muted); font-size: 0.9rem; }
+
+/* The topic, pinned at the top */
+.rb-topic { margin-bottom: 0.5rem; }
+.rb-topic-card { background: var(--brand-surface); border: 1px solid var(--brand-line); border-radius: 14px; padding: 0.75rem 0.9rem;
+                 display: flex; flex-direction: column; gap: 0.45rem; cursor: pointer; }
+.rb-topic-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.88rem; }
+.rb-topic-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.rb-topic .rb-text { font-size: 1rem; line-height: 1.65; }
+
+/* Day separators */
+.rb-day { display: flex; justify-content: center; margin: 0.6rem 0 0.25rem; }
+.rb-day span { background: #e9e5dc; color: var(--brand-muted); font-size: 0.76rem; font-weight: 600; border-radius: 999px; padding: 0.1rem 0.75rem; }
+
+/* Messages: others on the left, yours on the right */
+.rb-msg { display: flex; align-items: flex-end; gap: 0.4rem; margin-top: 2px; }
+.rb-msg-first { margin-top: 0.55rem; }
+.rb-msg-mine { justify-content: flex-end; }
+.rb-msg-gap { width: 28px; flex-shrink: 0; }
+.rb-msg-col { display: flex; flex-direction: column; max-width: 80%; min-width: 0; }
+.rb-msg-mine .rb-msg-col { align-items: flex-end; }
+.rb-bubble { position: relative; padding: 0.4rem 0.65rem 0.3rem; border-radius: 16px; background: var(--brand-surface); border: 1px solid var(--brand-line);
+             cursor: pointer; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04); min-width: 4.5rem; overflow-wrap: anywhere; }
+.rb-msg-last:not(.rb-msg-mine) .rb-bubble { border-bottom-left-radius: 4px; }
+.rb-msg-mine .rb-bubble { background: #dfe8d3; border-color: #dfe8d3; }
+.rb-msg-mine.rb-msg-last .rb-bubble { border-bottom-right-radius: 4px; }
+.rb-bubble:focus-visible, .rb-topic-card:focus-visible { outline: 2px solid var(--brand-leaf); outline-offset: 2px; }
+.rb-bubble-name { display: block; font-size: 0.78rem; font-weight: 700; color: var(--brand-mud); margin-bottom: 0.1rem; }
+.rb-bubble .rb-text { font-size: 0.98rem; line-height: 1.55; }
+.rb-bubble .rb-photo-grid { margin: 0.1rem 0 0.35rem; max-width: 300px; }
+.rb-stamp { display: block; text-align: right; font-size: 0.7rem; color: var(--brand-muted); margin-top: 0.1rem; white-space: nowrap; }
+.rb-edited { color: var(--brand-muted); }
+
+/* Reactions under a bubble, and the tray a tap opens */
+.rb-reactions { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: -0.35rem; padding: 0 0.5rem; position: relative; z-index: 1; }
+.rb-msg-mine .rb-reactions { justify-content: flex-start; }
+.rb-msg:not(.rb-msg-mine) .rb-reactions, .rb-topic .rb-reactions { justify-content: flex-end; }
+.rb-reactions .rb-sticker { font-size: 0.76rem; padding: 0 0.45rem; background: var(--brand-surface); }
+.rb-tray { margin-top: 0.4rem; padding: 0.55rem; background: var(--brand-surface); border: 1px solid var(--brand-line); border-radius: 14px;
+           box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); display: flex; flex-direction: column; gap: 0.45rem; max-width: 330px; }
+.rb-tray-stickers { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.rb-tray-actions { display: flex; align-items: center; gap: 1rem; border-top: 1px solid var(--brand-line); padding-top: 0.4rem; }
+.rb-tray-actions .rb-edit, .rb-tray-actions .rb-delete { font-size: 0.85rem; padding: 0.25rem 0; }
+.rb-edit-form { display: flex; flex-direction: column; gap: 0.45rem; min-width: min(280px, 70vw); cursor: auto; }
+.rb-edit-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.5rem; }
+.rb-edit-foot .rb-btn { min-height: 36px; padding: 0 0.9rem; }
+
+/* The message bar */
+.rb-composer { flex-shrink: 0; background: var(--brand-surface); border-top: 1px solid var(--brand-line);
+               padding: 0.5rem 0.6rem calc(0.6rem + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 0.4rem; }
+.rb-composer .rb-photo-previews { padding: 0 0.2rem; }
+.rb-bar { display: flex; align-items: flex-end; gap: 0.45rem; }
+.rb-bar-icon { width: 40px; height: 40px; flex-shrink: 0; border: 0; border-radius: 50%; background: var(--brand-sunk); color: var(--brand-leaf); font-size: 1.05rem; cursor: pointer; }
+.rb-bar-field { flex: 1; min-width: 0; display: flex; align-items: flex-end; gap: 0.3rem; min-height: 42px; padding: 0.3rem 0.4rem 0.3rem 0.9rem;
+                border: 1px solid var(--brand-border); border-radius: 22px; background: var(--brand-surface); }
+.rb-bar-field:focus-within { border-color: var(--brand-leaf); box-shadow: 0 0 0 1px var(--brand-leaf); }
+.rb-bar-input { flex: 1; min-width: 0; border: 0; outline: 0; resize: none; padding: 0.25rem 0; background: transparent;
+                font-family: var(--font-body); font-size: 1rem; line-height: 1.45; color: var(--brand-ink); max-height: 140px; }
+.rb-bar-field .yt-toggle { flex-shrink: 0; align-self: center; }
+.rb-bar-send { width: 42px; height: 42px; flex-shrink: 0; border: 0; border-radius: 50%; background: var(--brand-leaf); color: #fff;
+               display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.rb-bar-send:disabled { opacity: 0.55; cursor: default; }
+.rb-bar-login { flex-shrink: 0; min-height: 42px; padding: 0 0.85rem; font-size: 0.88rem; }
+.rb-composer .rb-reply-note { padding-left: 0.4rem; }
+
+/* ---- phones: the thread fills the screen ---- */
+@media (max-width: 767.98px) {
+  body:has(.rb-chat-page:not(.rb-chat-page-list)) .site-header,
+  body:has(.rb-chat-page:not(.rb-chat-page-list)) .site-footer { display: none; }
+  .rb-chat-page:not(.rb-chat-page-list) .rb-chat-side { display: none; }
+  .rb-chat-page:not(.rb-chat-page-list) .rb-chat { height: 100dvh; }
+  .rb-chat-page-list { padding-bottom: 5rem; }
+}
+
+/* ---- desktop: list on the left, conversation on the right ---- */
+@media (min-width: 768px) {
+  .rb-desktop-only { display: inline-flex; }
+  .rb-fab { display: none; }
+  .rb-chat-page { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); max-width: 1200px; margin: 1rem auto 0;
+                  height: calc(100dvh - 7.5rem); min-height: 520px; border: 1px solid var(--brand-line); border-radius: 14px; overflow: hidden;
+                  background: var(--brand-surface); }
+  .rb-chat-side { border-right: 1px solid var(--brand-line); overflow-y: auto; }
+  .rb-chatbar-back, .rb-chatbar-mark { display: none; }
+  .rb-chatbar { padding: 0.75rem 1.2rem; }
+  .rb-chatbar-title { font-size: 1.1rem; }
+  .rb-chat-scroll { padding: 1rem 1.6rem 0.6rem; }
+  .rb-topic { align-self: center; width: 100%; max-width: 640px; }
+  .rb-msg-col { max-width: 62%; }
+  .rb-composer { padding: 0.6rem 1.2rem 0.8rem; }
+  .rb-chat-welcome { display: flex; flex-direction: column; justify-content: center; gap: 1rem; padding: 2rem; background: var(--brand-sunk); }
+  .rb-chat-welcome-hint { margin: 0; text-align: center; color: var(--brand-muted); }
+}
+
+/* Unread counts (lib/reads.js) */
+.rb-chat-row-second { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.rb-chat-row-second .rb-chat-row-last { flex: 1; min-width: 0; }
+.rb-unread { flex-shrink: 0; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand-leaf); color: #fff;
+             font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.rb-chat-row-time-new { color: var(--brand-leaf); font-weight: 700; }
+.rb-unread-line { display: flex; align-items: center; gap: 0.6rem; margin: 0.7rem 0 0.2rem; color: var(--brand-leaf); font-size: 0.78rem; font-weight: 700; scroll-margin-top: 0.5rem; }
+.rb-unread-line::before, .rb-unread-line::after { content: ""; flex: 1; height: 1px; background: #c9d3bb; }
