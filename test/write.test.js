@@ -69,7 +69,7 @@ test('createThread: saves a cleaned thread with the author\'s name and photo, re
   assert.deepEqual({ title: t.title, body: t.body, word: t.word, region: t.region, author_id: t.author_id, author_name: t.author_name, author_pic: t.author_pic, source: t.source },
                    { title: 'బొక్క అంటే?', body: 'మా ఊర్లో\nతిట్టు', word: 'బొక్క', region: 'రాయలసీమ', author_id: 'u1', author_name: 'సీత', author_pic: 'https://x/s.jpg', source: 'site' })
   assert.equal(t.last_activity_at, NOW.toISOString())
-  assert.equal(r.body.path, `/t/${t.id}/` + encodeURIComponent('బొక్క-అంటే'))
+  assert.equal(r.body.path, `/t/${t.id}/bokka-ante`)
 })
 
 test('createThread: no word or region is fine; a body may be empty', async () => {
@@ -321,7 +321,7 @@ test('editThread: your own thread\'s title and text within 2 days; returns the n
   const u = s.threads[0]
   assert.deepEqual([u.title, u.body, u.edited_at, u.last_activity_at, u.word, u.region],
                    ['కొత్త శీర్షిక', 'కొత్త', NOW.toISOString(), ago(60), 'బేగా', 'కోస్తా'])
-  assert.equal(r.body.path, `/t/${t.id}/` + encodeURIComponent('కొత్త-శీర్షిక'))
+  assert.equal(r.body.path, `/t/${t.id}/kotta-shirshika`)
 })
 
 test('editThread: even after replies (only the writer, within 2 days); not others, not after 2 days, not admins', async () => {
