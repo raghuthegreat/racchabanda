@@ -3,27 +3,31 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { slugify, threadPath, cleanTitle, cleanBody, timeAgo, TITLE_MAX, BODY_MAX } from '../lib/text.js'
 
-test('slugify keeps Telugu and English letters, joins the rest with -', () => {
-  assert.equal(slugify('"బొక్క" అంటే మా ఊర్లో రంధ్రం కాదు, తిట్టు!'), 'బొక్క-అంటే-మా-ఊర్లో-రంధ్రం-కాదు-తిట్టు')
+test('slugify writes Telugu in English letters (lib/roman.js) and joins the words with -', () => {
+  assert.equal(slugify('"బొక్క" అంటే మా ఊర్లో రంధ్రం కాదు, తిట్టు!'), 'bokka-ante-ma-urlo-randhram-kadu')
+  assert.equal(slugify('దీవి ఏసింది అంటారా మీ ఊర్లో'), 'divi-esindi-antara-mi-urlo')
   assert.equal(slugify('Auna vs Avuna?'), 'auna-vs-avuna')
   assert.equal(slugify('  --!!--  '), '')
+  assert.equal(slugify('😀😀'), '', 'nothing spellable: the address is just /t/<id>')
 })
 
-test('slugify keeps vowel signs and the virama with their letters', () => {
-  assert.equal(slugify('క్రిందికి'), 'క్రిందికి')
+test('slugify spells a conjunct as one sound', () => {
+  assert.equal(slugify('క్రిందికి'), 'krindiki')
 })
 
-test('slugify stops at about 60 characters, on a word boundary', () => {
+test('slugify keeps at most 6 words and about 60 characters, ending on a whole word', () => {
+  assert.equal(slugify('ఒకటి రెండు మూడు నాలుగు ఐదు ఆరు ఏడు ఎనిమిది'), 'okati-rendu-mudu-nalugu-aidu-aru')
   const s = slugify('పదం '.repeat(40))
   assert.ok(s.length <= 60, s.length)
   assert.ok(!s.endsWith('-'))
-  assert.ok(s.split('-').every((w) => w === 'పదం'))
+  assert.ok(s.split('-').every((w) => w === 'padam'))
+  const long = slugify('a'.repeat(80) + ' b')
+  assert.ok(long.length <= 60 && long.length > 0, long)
 })
 
-test('threadPath: /t/<id>/<slug>, percent-encoded (it goes into Location headers and emails)', () => {
-  assert.equal(threadPath({ id: 12, title: 'బొక్క అంటే?' }), '/t/12/' + encodeURIComponent('బొక్క-అంటే'))
-  assert.equal(decodeURIComponent(threadPath({ id: 12, title: 'బొక్క అంటే?' })), '/t/12/బొక్క-అంటే')
-  assert.match(threadPath({ id: 12, title: 'బొక్క అంటే?' }), /^[\x21-\x7e]+$/)
+test('threadPath: /t/<id>/<slug>, plain ASCII (it goes into Location headers and emails)', () => {
+  assert.equal(threadPath({ id: 12, title: 'బొక్క అంటే?' }), '/t/12/bokka-ante')
+  assert.match(threadPath({ id: 12, title: 'దీవి ఏసింది అంటారా మీ ఊర్లో' }), /^[\x21-\x7e]+$/)
   assert.equal(threadPath({ id: 7, title: '???' }), '/t/7')
 })
 
