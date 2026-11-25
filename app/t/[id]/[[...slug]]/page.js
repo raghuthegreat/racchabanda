@@ -5,9 +5,10 @@ import Bubble from '@/components/chat/Bubble'
 import ChatBar from '@/components/chat/ChatBar'
 import ChatList from '@/components/chat/ChatList'
 import MarkRead from '@/components/chat/MarkRead'
+import Live from '@/components/chat/Live'
 import { PendingProvider, PendingReplies } from '@/components/chat/Pending'
 import { getThread, listThreads, parseId } from '@/lib/forum'
-import { readDb, writeDb } from '@/lib/db'
+import { readDb, writeDb, livePublic } from '@/lib/db'
 import { unreadCounts } from '@/lib/reads'
 import { currentMe } from '@/lib/me'
 import { threadPath } from '@/lib/text'
@@ -114,6 +115,8 @@ export default async function ThreadPage({ params }) {
         </div>
         <ReplyBox threadId={thread.id} loggedIn={loggedIn} photosOn={!!photoBase()} />
         {loggedIn && <MarkRead threadId={thread.id} firstUnread={firstUnread} />}
+        {livePublic() && <Live {...livePublic()} threadId={thread.id} meId={meId}
+                               postIds={posts.map((p) => p.id)} lastPostId={posts.at(-1)?.id ?? null} />}
       </section>
       </PendingProvider>
     </div>
