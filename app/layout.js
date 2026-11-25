@@ -36,7 +36,8 @@ export default async function RootLayout({ children }) {
         {/* No crossOrigin, exactly as the site loads it: Font Awesome only sends its CORS header to
             requests that ask with an Origin, and Safari reuses the site's plain cached copy for a
             crossOrigin request, finds no CORS header and drops the stylesheet (blank icons on phones) */}
-        <link href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" rel="stylesheet" />
+        {/* Icons: the site's own trimmed Font Awesome Free (yaasa scripts/build_icons.py) */}
+        <link href="/Static/css/icons.css" rel="stylesheet" />
         <link href="/Static/css/site.css" rel="stylesheet" />
         <link href="/Static/css/brand.css" rel="stylesheet" />
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
